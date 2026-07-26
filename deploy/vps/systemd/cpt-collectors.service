@@ -1,0 +1,17 @@
+[Unit]
+Description=Crypto-paper-trader data collectors (24/7 archive)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=cpt
+Group=cpt
+WorkingDirectory=/opt/crypto-paper-trader
+ExecStart=/usr/bin/python3 -m collectors.run --loop
+Restart=on-failure
+RestartSec=60
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -57,6 +57,12 @@ The quant research layer — architecture, data sources, strategy hypotheses wit
 
 Phase 1 (data collection) is implemented: dependency-free Python collectors archive candles, funding rates, news, Fear & Greed, and stablecoin flows into SQLite. See [research/README.md](./research/README.md) to start the backfill and the collection loop.
 
+The backtest layer (`research/backtest/`) adds a cost-modeled long/flat engine with walk-forward validation — first results in [research/experiments.md](./research/experiments.md).
+
+## Lightning tip jar (`lightning/`)
+
+A self-hosted donation stack on LND: custom LNURL-pay + Lightning Address implementation (LUD-06/12/16) against LND's REST API, invoice-only macaroon isolation (the web service can create invoices but never spend), SQLite settlements ledger, and a public `/api/tips` endpoint. Try it with zero infrastructure: `python -m lightning.service --demo`. Deployment (signet first, then mainnet) is scripted in [deploy/vps/README.md](./deploy/vps/README.md).
+
 ### v2 ideas (superseded by the research plan)
 
 1. **Backtesting engine** — replay 90 days of history through strategies; report return, drawdown, win rate vs buy-and-hold

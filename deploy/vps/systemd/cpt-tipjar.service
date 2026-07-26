@@ -1,0 +1,18 @@
+[Unit]
+Description=Crypto-paper-trader Lightning tip-jar (LNURL-pay service)
+After=lnd.service
+Wants=lnd.service
+
+[Service]
+User=cpt
+Group=cpt
+WorkingDirectory=/opt/crypto-paper-trader
+EnvironmentFile=/etc/cpt/tipjar.env
+ExecStart=/usr/bin/python3 -m lightning.service
+Restart=on-failure
+RestartSec=15
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

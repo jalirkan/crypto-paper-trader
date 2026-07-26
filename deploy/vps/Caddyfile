@@ -1,0 +1,20 @@
+# Replace example.com with your domain (must have an A record → this VPS).
+# Caddy handles HTTPS certificates automatically.
+
+example.com {
+	handle /.well-known/lnurlp/* {
+		reverse_proxy 127.0.0.1:8090
+	}
+	handle /lnurlp/* {
+		reverse_proxy 127.0.0.1:8090
+	}
+	handle /api/tips {
+		reverse_proxy 127.0.0.1:8090
+	}
+	handle /healthz {
+		reverse_proxy 127.0.0.1:8090
+	}
+	handle {
+		respond "crypto-paper-trader tip jar — see /api/tips" 200
+	}
+}

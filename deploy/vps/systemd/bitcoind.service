@@ -1,0 +1,17 @@
+[Unit]
+Description=Bitcoin Core (signet, pruned)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=bitcoin
+Group=bitcoin
+ExecStart=/usr/local/bin/bitcoind -conf=/home/bitcoin/.bitcoin/bitcoin.conf -datadir=/home/bitcoin/.bitcoin
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=600
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

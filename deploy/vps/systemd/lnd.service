@@ -1,0 +1,17 @@
+[Unit]
+Description=LND Lightning daemon
+After=bitcoind.service
+Requires=bitcoind.service
+
+[Service]
+User=lnd
+Group=lnd
+ExecStart=/usr/local/bin/lnd --configfile=/home/lnd/.lnd/lnd.conf
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=180
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
