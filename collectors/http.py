@@ -32,12 +32,22 @@ def get_bytes(
         req_headers.update(headers)
 
     last_err: Exception | None = None
-    for attempt in range(retries):
+    hops = 0
+    attempt = 0
+    while attempt < retries:
         try:
             req = urllib.request.Request(url, headers=req_headers)
             with urllib.request.urlopen(req, timeout=timeout) as res:
                 return res.read()
         except urllib.error.HTTPError as e:
+            # Follow redirects urllib doesn't handle itself (e.g. 308 on py<3.11).
+            if e.code in (301, 302, 303, 307, 308):
+                location = e.headers.get("Location")
+                if location and hops < 5:
+                    url = urllib.parse.urljoin(url, location)
+                    hops += 1
+                    continue  # redirect hop doesn't consume a retry
+                raise HttpError(url, e.code, "redirect loop or missing Location") from e
             # Retry only on rate limits and server errors.
             if e.code == 429 or e.code >= 500:
                 last_err = HttpError(url, e.code, "retryable HTTP error")
@@ -46,6 +56,7 @@ def get_bytes(
         except (urllib.error.URLError, TimeoutError, OSError) as e:
             last_err = HttpError(url, None, f"network error: {e}")
         time.sleep(2**attempt)  # 1s, 2s, 4s
+        attempt += 1
 
     assert last_err is not None
     raise last_err

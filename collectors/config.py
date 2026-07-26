@@ -24,7 +24,7 @@ FUNDING_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
 # News feeds — no API keys required. (CryptoPanic/Reddit/Alpaca can be added
 # later behind env keys; see research/README.md.)
 RSS_FEEDS = [
-    ("coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
+    ("coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss"),
     ("cointelegraph", "https://cointelegraph.com/rss"),
     ("theblock", "https://www.theblock.co/rss.xml"),
     ("decrypt", "https://decrypt.co/feed"),
