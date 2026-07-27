@@ -69,7 +69,29 @@ The signal service powers the dashboard's narrator panel (run it alongside
 the `forward_paper` table — that immutable ledger is the live track record,
 started 2026-07-26. First backtest findings: `experiments.md` (EXP-001).
 
+## Risk overlays (EXP-002/003/004)
+
+```powershell
+python -m research.backtest.run_overlays     # vol target / F&G gate / stablecoin gate
+```
+
+Verdicts in `experiments.md`: vol targeting KEPT, both flow gates KILLED.
+
+## LLM event pipeline
+
+```powershell
+python -m collectors.gdelt_backfill --from 2023-08-01   # ~25 min, free, resumable
+python -m research.events.classify --limit 500          # needs ANTHROPIC_API_KEY
+python -m research.events.study                         # drift analysis + report
+```
+
+GDELT backfills 3 years of crypto headlines (no key). The classifier labels
+them with claude-haiku (~$0.10–0.25 per 1,000 headlines — start with a
+`--limit` to gauge quality before a full run). The study engine then measures
+post-event drift vs bootstrap controls; buckets flagged CANDIDATE clear the
+pre-registered tradeability bar.
+
 ## Coming next (per RESEARCH_PLAN.md)
 
-- Weeks 4–5: LLM news classifier + event studies, funding-harvest sim
-- Weeks 6–8: public read-only deploy, tips widget, VPS signal service
+- Funding-harvest sim (needs VPS funding backfill)
+- Public read-only deploy, tips widget, research page
