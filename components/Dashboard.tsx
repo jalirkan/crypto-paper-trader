@@ -44,6 +44,9 @@ function DashboardInner() {
           <span className="tag">Simulated</span>
         </div>
         <div className="header-meta">
+          <a className="btn sm ghost" href="/research">
+            🔬 Research
+          </a>
           {error ? (
             <span className="error-text">{error}</span>
           ) : (

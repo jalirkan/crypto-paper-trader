@@ -99,6 +99,9 @@ class ClaudeGenerator:
     """Asks Claude for candidates, conditioned on what already failed/worked."""
 
     def __init__(self, model: str | None = None):
+        from ..envfile import load_env_local
+
+        load_env_local()
         self.api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
             raise RuntimeError("ANTHROPIC_API_KEY required for --generator claude")

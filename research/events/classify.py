@@ -121,9 +121,12 @@ def main() -> None:
     ap.add_argument("--db", default=str(DEFAULT_DB))
     args = ap.parse_args()
 
+    from ..envfile import load_env_local
+
+    load_env_local()
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        raise SystemExit("Set ANTHROPIC_API_KEY (see .env.example)")
+        raise SystemExit("Set ANTHROPIC_API_KEY in .env.local (see .env.example)")
     model = os.environ.get("EVENT_MODEL", "claude-haiku-4-5-20251001")
 
     conn = sqlite3.connect(args.db)
