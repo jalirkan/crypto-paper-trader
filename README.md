@@ -71,6 +71,18 @@ A self-hosted donation stack on LND: custom LNURL-pay + Lightning Address implem
 4. **Regime detection** — classify trending vs ranging markets and switch strategies accordingly
 5. **Scheduled runs** — move the bot loop server-side (cron) so it trades without the tab open
 
+## Execution engine (`execution/`)
+
+The OMS that will eventually trade the live micro-capital — built and
+chaos-tested long before it's allowed to. Write-ahead journaling (every order
+hits SQLite before the wire), lost-ack semantics (timeouts become UNKNOWN,
+resolved only by querying the exchange with idempotent client ids),
+duplicate-fill dedupe, crash-recovery reconciliation, and a kill switch that
+freezes on position drift rather than "fixing" it by trading. Tested against
+a scripted chaos-mode mock exchange; there is deliberately no real-exchange
+adapter until the forward-paper gate opens. Demo:
+`python -m execution.runner --mock`.
+
 ## Deploying the public site (Vercel + VPS)
 
 The app deploys to Vercel as-is; the Python services live on the VPS behind
