@@ -24,6 +24,30 @@ class TestPacing(unittest.TestCase):
         self.assertGreater(after, s)
 
 
+class TestWindows(unittest.TestCase):
+    def test_windows_skip_fully_covered_chunks(self):
+        from datetime import date
+
+        from collectors.gdelt_backfill import build_windows
+
+        days = [date(2023, 8, d) for d in range(1, 10)]  # 9 days
+        done = {"2023-08-01", "2023-08-02", "2023-08-03"}  # first chunk covered
+        windows = build_windows(days, done, window_days=3)
+        self.assertEqual(len(windows), 2)
+        self.assertEqual(windows[0], (date(2023, 8, 4), date(2023, 8, 6)))
+        self.assertEqual(windows[1], (date(2023, 8, 7), date(2023, 8, 9)))
+
+    def test_partial_coverage_still_fetches_window(self):
+        from datetime import date
+
+        from collectors.gdelt_backfill import build_windows
+
+        days = [date(2023, 8, d) for d in range(1, 4)]
+        done = {"2023-08-01"}  # one of three covered → window still needed
+        windows = build_windows(days, done, window_days=3)
+        self.assertEqual(len(windows), 1)
+
+
 class TestCoveredDays(unittest.TestCase):
     def test_only_successful_days_are_skipped(self):
         conn = sqlite3.connect(":memory:")
