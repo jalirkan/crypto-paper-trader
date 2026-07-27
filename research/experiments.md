@@ -60,3 +60,28 @@ Caveats:     Overlays tested on the same OOS span as EXP-001 — regime caveat
              carries over. Vol targeting's edge concentrated in high-vol
              months; that's consistent with its mechanism, but forward paper
              remains the judge.
+
+## LAB-001 · 2026-07-26 · Research Lab first run: random search, BTC
+
+Hypothesis:  Infrastructure test + null calibration: does random search over
+             the strategy DSL find anything that survives a sealed holdout
+             with trial-counting statistics? (Expected answer: no.)
+Config:      Random generator, 6 generations × 50 pop, seed 42. Search span =
+             first 730 daily bars; final 365 bars SEALED. Costs 10+5 bps.
+             Judgement: DSR ≥ 0.95 (N = all 274 trials) AND stationary-
+             bootstrap p ≤ 0.05 vs B&H on holdout.
+Data:        BTC daily, archive snapshot. Report: reports/lab_finalize_2026-07-26.md
+Result:      274 unique candidates evaluated. Best train SR/bar +0.098
+             (≈1.9 annualized — looks great, means nothing). Expected-max-of-
+             274-junk threshold SR0 = +0.122 — no finalist cleared it even
+             in-sample. Holdout (a −44.7% B&H year): all three finalists
+             FAILED — DSR 0.000, bootstrap p 0.11–1.00. One "elite" was a
+             nonsense inverted breakout that train data happened to reward.
+Verdict:     Lab works as designed: it correctly identified 274 strategies'
+             worth of apparent edge as pure selection luck. This run is the
+             null baseline for LAB-002 (Claude-guided generation): the
+             question becomes whether an LLM hypothesis engine beats random
+             search per trial — measurable, falsifiable.
+Caveats:     Holdout is a single bear-market year; a strategy family could
+             fail here and still have merit elsewhere. The lab's verdicts are
+             about THIS search, not the universe.

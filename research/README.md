@@ -91,7 +91,26 @@ them with claude-haiku (~$0.10–0.25 per 1,000 headlines — start with a
 post-event drift vs bootstrap controls; buckets flagged CANDIDATE clear the
 pre-registered tradeability bar.
 
+## AI Research Lab (`research/lab/`)
+
+Autonomous strategy discovery with statistical honesty: a JSON strategy DSL
+(no code execution), an interpreter with strict no-look-ahead timing, a
+generational search loop (random baseline or Claude-guided), and a **sealed
+holdout** judged by deflated Sharpe (Bailey–López de Prado, corrected for
+every trial ever run) plus stationary-bootstrap p-values.
+
+```powershell
+python -m research.lab.run --generator random --generations 6 --pop 50
+python -m research.lab.run --generator claude --generations 3 --pop 20   # needs ANTHROPIC_API_KEY
+python -m research.lab.run --finalize        # spends the holdout — judgement day
+```
+
+LAB-001 (ledger): 274 random candidates, best train Sharpe looked strong,
+sealed holdout + DSR rejected everything — the null baseline Claude-guided
+search now has to beat.
+
 ## Coming next (per RESEARCH_PLAN.md)
 
+- LAB-002: Claude-guided generation vs the random-search null
 - Funding-harvest sim (needs VPS funding backfill)
 - Public read-only deploy, tips widget, research page
