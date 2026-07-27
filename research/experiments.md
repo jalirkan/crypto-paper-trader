@@ -85,3 +85,36 @@ Verdict:     Lab works as designed: it correctly identified 274 strategies'
 Caveats:     Holdout is a single bear-market year; a strategy family could
              fail here and still have merit elsewhere. The lab's verdicts are
              about THIS search, not the universe.
+
+## LAB-002 · 2026-07-26 · Claude-guided search vs the random null
+
+Hypothesis:  An LLM hypothesis engine searches more efficiently per trial
+             than random generation. (Claude ran in-session as the generator,
+             conditioned on the trial ledger; 3 generations, 43 candidates.)
+Config:      Same protocol and search span as LAB-001; trials cumulative
+             (N = 317 total). Candidate families: trend persistence with
+             momentum confirms, low-volatility breakouts, RSI-regime
+             hysteresis, smoothed momentum, vol-brake trend.
+Result:      Per-trial quality — Claude decisively better: median robust SR
+             +0.064 vs −0.058 (random), 77% vs 27% clearing +0.05, mean
+             +0.037 vs −0.491. Best single trial — random still ahead
+             (+0.097 vs +0.088), as expected: max of 274 lucky draws beats
+             max of 43 disciplined ones when no true edge exists.
+             Sealed holdout — ALL FAIL, both sources. But failure modes
+             differ tellingly: random's finalists rode the −44.7% bear to
+             −53% drawdowns (they were disguised buy-and-hold); Claude's
+             finalists lost −19% to −25% at half the drawdown — they failed
+             like genuine trend strategies in a bear, not like junk.
+             DSR 0.000 across the board; p vs B&H 0.20–0.25 (Claude) vs
+             0.11–1.00 (random). Nothing significant.
+Verdict:     KEEP the two-sided finding: (1) LLM generation ≈3× more
+             efficient per trial — worth using for future searches;
+             (2) neither search produced an edge that survives trial-counting
+             statistics — consistent with EXP-001/002: simple Donchian +
+             vol targeting remains the only credible candidate, and it came
+             from hypothesis-first research, not search.
+Disclosures: The generator (Claude) had seen LAB-001's holdout report and
+             knew the holdout year was bearish — a leak that plausibly
+             biased candidates defensive. The 3 extra holdout evaluations of
+             Claude's top-3 were outside the finalize protocol, are reported
+             here, and selected nothing.
