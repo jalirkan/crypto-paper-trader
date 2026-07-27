@@ -7,6 +7,17 @@ from collectors import db as cdb
 from collectors.gdelt_backfill import SLEEP_MAX, SLEEP_MIN, covered_days, next_sleep
 
 
+class TestNapEscalation(unittest.TestCase):
+    def test_naps_double_and_cap(self):
+        from collectors.gdelt_backfill import CIRCUIT_PAUSE_MAX_S, nap_duration
+
+        self.assertEqual(nap_duration(0), 900.0)    # 15 min
+        self.assertEqual(nap_duration(1), 1800.0)   # 30 min
+        self.assertEqual(nap_duration(2), 3600.0)   # 60 min
+        self.assertEqual(nap_duration(3), 7200.0)   # 2 h cap
+        self.assertEqual(nap_duration(10), CIRCUIT_PAUSE_MAX_S)  # stays capped
+
+
 class TestPacing(unittest.TestCase):
     def test_aimd_converges_within_bounds(self):
         s = 20.0

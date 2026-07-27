@@ -61,7 +61,13 @@ def next_sleep(current: float, success: bool) -> float:
 
 
 CIRCUIT_FAILS = 3          # consecutive window failures that trip the breaker
-CIRCUIT_PAUSE_S = 900.0    # 15 min nap — lets an IP penalty box decay
+CIRCUIT_PAUSE_S = 900.0    # first nap: 15 min
+CIRCUIT_PAUSE_MAX_S = 7200.0  # naps escalate 15→30→60→120 min while still locked out
+
+
+def nap_duration(level: int) -> float:
+    """Escalating nap: doubles per consecutive breaker trip, capped at 2h."""
+    return min(CIRCUIT_PAUSE_S * (2**level), CIRCUIT_PAUSE_MAX_S)
 
 
 def fetch_window_patiently(w_start: date, w_end: date) -> list[tuple]:
@@ -110,7 +116,7 @@ def run_backfill(start: date, end: date, refetch: bool, window_days: int) -> Non
     log_line({"event": "start", "windows": len(windows), "window_days": window_days})
 
     sleep_s = SLEEP_START
-    total_new = fails = fetched = streak_fails = 0
+    total_new = fails = fetched = streak_fails = nap_level = 0
     t0 = time.time()
     for w_start, w_end in windows:
         label = f"{w_start}→{w_end}" if w_end != w_start else str(w_start)
@@ -120,6 +126,7 @@ def run_backfill(start: date, end: date, refetch: bool, window_days: int) -> Non
             total_new += new
             fetched += 1
             streak_fails = 0
+            nap_level = 0  # lockout over — naps reset to 15 min
             d = w_start
             while d <= w_end:  # every day in a fetched window counts as covered
                 db.log_run(conn, "gdelt", True, new if d == w_start else 0, str(d))
@@ -139,13 +146,16 @@ def run_backfill(start: date, end: date, refetch: bool, window_days: int) -> Non
             sleep_s = next_sleep(sleep_s, False)
             print(f"{label}: FAILED — {str(err)[:100]}  (pace → {sleep_s:.0f}s)")
             if streak_fails >= CIRCUIT_FAILS:
+                pause = nap_duration(nap_level)
                 print(
                     f"◔ circuit breaker: {streak_fails} consecutive failures — "
-                    f"napping {CIRCUIT_PAUSE_S/60:.0f} min to let the limiter cool…"
+                    f"napping {pause/60:.0f} min (level {nap_level}); "
+                    "escalates while the lockout holds, resets on first success"
                 )
-                log_line({"event": "circuit_pause", "pause_s": CIRCUIT_PAUSE_S})
-                time.sleep(CIRCUIT_PAUSE_S)
+                log_line({"event": "circuit_pause", "pause_s": pause, "level": nap_level})
+                time.sleep(pause)
                 streak_fails = 0
+                nap_level += 1
                 sleep_s = SLEEP_START
         time.sleep(sleep_s)
 
