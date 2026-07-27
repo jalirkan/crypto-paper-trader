@@ -1,0 +1,43 @@
+"""Offline tests for backfill pacing and covered-day skipping."""
+
+import sqlite3
+import unittest
+
+from collectors import db as cdb
+from collectors.gdelt_backfill import SLEEP_MAX, SLEEP_MIN, covered_days, next_sleep
+
+
+class TestPacing(unittest.TestCase):
+    def test_aimd_converges_within_bounds(self):
+        s = 20.0
+        for _ in range(50):
+            s = next_sleep(s, success=True)
+        self.assertAlmostEqual(s, SLEEP_MIN)  # floor under sustained success
+        for _ in range(20):
+            s = next_sleep(s, success=False)
+        self.assertAlmostEqual(s, SLEEP_MAX)  # ceiling under sustained 429s
+
+    def test_slowdown_outpaces_speedup(self):
+        # One failure must cost more than one success gains (stability).
+        s = 30.0
+        after = next_sleep(next_sleep(s, False), True)
+        self.assertGreater(after, s)
+
+
+class TestCoveredDays(unittest.TestCase):
+    def test_only_successful_days_are_skipped(self):
+        conn = sqlite3.connect(":memory:")
+        conn.executescript(cdb.SCHEMA)
+        cdb.log_run(conn, "gdelt", True, 250, "2023-08-01")
+        cdb.log_run(conn, "gdelt", False, 0, "2023-08-02: 429")
+        cdb.log_run(conn, "gdelt", True, 0, "2023-08-03")  # 0 new still counts
+        cdb.log_run(conn, "news:rss", True, 10, "not-a-day")  # other collectors ignored
+        done = covered_days(conn)
+        self.assertIn("2023-08-01", done)
+        self.assertIn("2023-08-03", done)
+        self.assertNotIn("2023-08-02: 429", done)
+        self.assertEqual(len([d for d in done if d.startswith("2023-08-0")]), 2)
+
+
+if __name__ == "__main__":
+    unittest.main()
