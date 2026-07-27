@@ -19,6 +19,7 @@ def main() -> None:
     ap.add_argument("--lab-db", default=None)
     ap.add_argument("--symbol", default="BTC")
     ap.add_argument("--holdout-bars", type=int, default=365)
+    ap.add_argument("--multi", action="store_true")
     ap.add_argument("--context", action="store_true")
     ap.add_argument("--ingest", default=None, help="JSON file with a candidate array")
     ap.add_argument("--gen", type=int, default=99)
@@ -41,8 +42,14 @@ def main() -> None:
         return
 
     if args.ingest:
-        ts, closes = load_closes(args.symbol, db_path=args.db)
-        search = closes[: len(closes) - args.holdout_bars]
+        symbols = ["BTC", "ETH", "SOL"] if args.multi else [args.symbol]
+        closes_map = {s: load_closes(s, db_path=args.db)[1] for s in symbols}
+        search_len = min(len(c) for c in closes_map.values()) - args.holdout_bars
+        search: dict | list = (
+            {s: c[:search_len] for s, c in closes_map.items()}
+            if args.multi
+            else closes_map[args.symbol][:search_len]
+        )
         lab = orchestrate.SearchLab(search, conn, args.source)
         with open(args.ingest, encoding="utf-8") as f:
             candidates = json.load(f)

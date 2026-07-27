@@ -25,6 +25,7 @@ REPORTS = Path(__file__).resolve().parent.parent / "reports"
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--symbol", default="BTC")
+    ap.add_argument("--multi", action="store_true", help="search BTC+ETH+SOL jointly")
     ap.add_argument("--db", default=None, help="archive.db override")
     ap.add_argument("--lab-db", default=None)
     ap.add_argument("--generator", choices=["random", "claude"], default="random")
@@ -35,17 +36,26 @@ def main() -> None:
     ap.add_argument("--finalize", action="store_true")
     args = ap.parse_args()
 
-    ts, closes = load_closes(args.symbol, db_path=args.db)
-    search_len = len(closes) - args.holdout_bars
+    symbols = ["BTC", "ETH", "SOL"] if args.multi else [args.symbol]
+    closes_map = {s: load_closes(s, db_path=args.db)[1] for s in symbols}
+    closes = closes_map[symbols[0]]
+    search_len = min(len(c) for c in closes_map.values()) - args.holdout_bars
     if search_len < 400:
         raise SystemExit("not enough history for search + holdout")
     conn = orchestrate.lab_db(args.lab_db)
 
     if args.finalize:
-        report = orchestrate.finalize(closes, search_len, conn)
+        if args.multi:
+            report = orchestrate.finalize_multi(closes_map, search_len, conn)
+            report["benchmark"] = report["benchmark_basket"]
+            for f in report["finalists"]:
+                f["holdout"] = f["holdout_basket"]
+        else:
+            report = orchestrate.finalize(closes, search_len, conn)
         stamp = time.strftime("%Y-%m-%d")
+        scope = "BTC+ETH+SOL basket" if args.multi else args.symbol
         lines = [
-            f"# LAB finalize — {stamp} ({args.symbol})",
+            f"# LAB finalize — {stamp} ({scope})",
             f"\nTrials counted: {report['n_trials']} · holdout bars: {report['holdout_bars']}",
             f"\nBenchmark (B&H holdout): Sharpe/bar n/a, CAGR {report['benchmark']['cagr']*100:.1f}%, "
             f"MaxDD {report['benchmark']['max_dd']*100:.1f}%\n",
@@ -63,13 +73,17 @@ def main() -> None:
                 "",
             ]
         REPORTS.mkdir(parents=True, exist_ok=True)
-        out = REPORTS / f"lab_finalize_{stamp}.md"
+        tag = "multi_" if args.multi else ""
+        out = REPORTS / f"lab_finalize_{tag}{stamp}.md"
         out.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print("\n".join(lines))
         print(f"Report → {out}")
         return
 
-    lab = orchestrate.SearchLab(closes[:search_len], conn, args.generator)
+    search_input: dict | list = (
+        {s: c[:search_len] for s, c in closes_map.items()} if args.multi else closes[:search_len]
+    )
+    lab = orchestrate.SearchLab(search_input, conn, args.generator)
     if args.generator == "random":
         gen = RandomGenerator(seed=args.seed)
     else:

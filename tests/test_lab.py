@@ -139,6 +139,23 @@ class TestOrchestration(unittest.TestCase):
         self.assertIsNotNone(first)
         self.assertIsNone(second)
 
+    def test_multi_asset_scoring_and_basket_finalize(self):
+        a = trending(700)
+        b = [c * 0.5 for c in trending(700)]  # second asset, same shape
+        conn = orchestrate.lab_db(":memory:")
+        lab = orchestrate.SearchLab({"A": a[:500], "B": b[:500]}, conn, "random")
+        out = lab.evaluate(BREAKOUT, 0)
+        self.assertIsNotNone(out)
+        self.assertIn("per_asset", out["stats"])
+        self.assertEqual(set(out["stats"]["per_asset"]), {"A", "B"})
+
+        report = orchestrate.finalize_multi({"A": a, "B": b}, 500, conn, top_m=1)
+        f = report["finalists"][0]
+        self.assertEqual(report["holdout_bars"], 200)
+        self.assertIn(f["verdict"], ("PASS", "FAIL"))
+        self.assertEqual(set(f["per_asset"]), {"A", "B"})
+        self.assertIn("sharpe", f["holdout_basket"])
+
     def test_known_breakout_scores_sanely(self):
         closes = trending(600)
         conn = orchestrate.lab_db(":memory:")

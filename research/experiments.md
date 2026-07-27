@@ -118,3 +118,27 @@ Disclosures: The generator (Claude) had seen LAB-001's holdout report and
              biased candidates defensive. The 3 extra holdout evaluations of
              Claude's top-3 were outside the finalize protocol, are reported
              here, and selected nothing.
+
+## LAB-003 · 2026-07-26 · Multi-asset search: min-across-BTC/ETH/SOL
+
+Hypothesis:  Requiring a candidate to score robustly on ALL THREE assets
+             (train = mean Sharpe, robust = min across assets of worst
+             ±25% neighbor) filters luck harder; survivors judged on the
+             equal-weight basket over sealed holdouts.
+Config:      Fresh campaign (own trial count, N=166): random 4×40 (seed 7) +
+             12 Claude-generated candidates. Same costs/protocol.
+Result:      The cross-asset bar bites: random's best robust fell from
+             +0.097 (single-asset) to +0.062. Claude's per-trial edge held
+             (median +0.040 vs −0.065; 58% vs 17% clearing +0.03). Two of
+             Claude's LAB-002 single-asset stars re-scored here and dropped
+             ~50% — they had quietly specialized to BTC.
+             Basket holdout (B&H −49.6% CAGR, −64.3% MaxDD): all three
+             finalists (all random-source) FAIL — DSR ≤ 0.004, p ≥ 0.27.
+Verdict:     Third consecutive honest null from search. Combined with
+             LAB-001/002: within this DSL space and regime, discoverable
+             edge that survives trial-counting statistics does not exist.
+             The lab's value is proven as a *rejection machine* — and the
+             per-trial LLM advantage replicated out of sample (58%/17% here
+             vs 77%/27% in LAB-002).
+Caveats:     Report file: reports/lab_finalize_multi_2026-07-26.md. Same
+             single-bear-regime holdout caveat as before, now cubed.
