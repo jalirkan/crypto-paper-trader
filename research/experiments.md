@@ -38,3 +38,25 @@ Caveats:     (1) OOS span ≈2y of mostly bear/chop — a long/flat structure is
              three OOS results carries residual selection bias — it is a
              candidate, not a conclusion; (3) no live claim before ≥3 months of
              forward paper per PLAN §7.
+
+## EXP-002/003/004 · 2026-07-26 · Risk overlays on Donchian (pre-registered)
+
+Hypothesis:  Fixed-parameter, shrink-only risk overlays improve OOS drawdown
+             without hurting Sharpe. KEEP rule written before running: MaxDD
+             improves with Sharpe within 0.05 of plain, on ≥2 of 3 symbols.
+Config:      vol_target (40% ann / 30d window), fng_gate (halve day after
+             F&G ≥ 80), stable_gate (halve while 30d stablecoin supply Δ < 0).
+             No grids — parameters fixed a priori. Walk-forward as EXP-001.
+Data:        Same candles as EXP-001 + 3,094 days of F&G + 3,162 days of
+             stablecoin supply. Full tables: reports/overlays_2026-07-26.md
+Result:      vol_target: KEEP (BTC Sharpe 0.44→0.67, MaxDD −25.4→−19.4;
+             ETH MaxDD −31.6→−22.8 with Sharpe within band; SOL fails).
+             fng_gate: 1/3 → KILL. stable_gate: 1/3 → KILL.
+             combined: 1/3 → KILL (over-stacking shrinks returns too far).
+Verdict:     KEEP vol targeting as part of the candidate sleeve
+             (donchian + vol_target). KILL both flow gates — archived here so
+             they don't get quietly retried.
+Caveats:     Overlays tested on the same OOS span as EXP-001 — regime caveat
+             carries over. Vol targeting's edge concentrated in high-vol
+             months; that's consistent with its mechanism, but forward paper
+             remains the judge.

@@ -17,14 +17,22 @@ def walk_forward(
     test_bars: int = 90,
     fee_bps: float = 10.0,
     slip_bps: float = 5.0,
+    transform=None,
 ) -> dict:
-    """Returns stitched OOS stats plus the per-window parameter choices."""
+    """Returns stitched OOS stats plus the per-window parameter choices.
+
+    `transform(closes, weights) -> weights` optionally applies a risk overlay
+    to each candidate weight series BEFORE selection, so train-window scoring
+    and test-window application see the same overlaid strategy.
+    """
     n = len(closes)
     grid = STRATEGY_SPECS[strategy]["grid"]
 
     # Precompute full weight series per param set — weights at t only use data
     # ≤ t, so slicing windows out of the full series is both correct and fast.
     all_weights = {i: compute_weights(strategy, closes, p) for i, p in enumerate(grid)}
+    if transform is not None:
+        all_weights = {i: transform(closes, w) for i, w in all_weights.items()}
 
     oos_returns: list[float] = []
     oos_weights: list[float] = []
