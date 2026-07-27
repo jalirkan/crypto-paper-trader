@@ -1,0 +1,17 @@
+[Unit]
+Description=Crypto-paper-trader signal service (live strategy state API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=cpt
+Group=cpt
+WorkingDirectory=/opt/crypto-paper-trader
+ExecStart=/usr/bin/python3 -m research.signal_service
+Restart=on-failure
+RestartSec=30
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

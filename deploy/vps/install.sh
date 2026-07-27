@@ -76,9 +76,10 @@ cp "$REPO_DIR/deploy/vps/Caddyfile" /etc/caddy/Caddyfile
 echo "== systemd units =="
 cp "$REPO_DIR"/deploy/vps/systemd/*.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable bitcoind lnd cpt-collectors
+systemctl enable bitcoind lnd cpt-collectors cpt-signals
 systemctl start bitcoind
 systemctl start cpt-collectors
+systemctl start cpt-signals
 
 echo
 echo "DONE. Next (manual, from README.md):"

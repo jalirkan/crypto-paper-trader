@@ -11,6 +11,12 @@ example.com {
 	handle /api/tips {
 		reverse_proxy 127.0.0.1:8090
 	}
+	handle /api/signals {
+		reverse_proxy 127.0.0.1:8091
+	}
+	handle /api/forward {
+		reverse_proxy 127.0.0.1:8091
+	}
 	handle /healthz {
 		reverse_proxy 127.0.0.1:8090
 	}

@@ -71,6 +71,24 @@ A self-hosted donation stack on LND: custom LNURL-pay + Lightning Address implem
 4. **Regime detection** — classify trending vs ranging markets and switch strategies accordingly
 5. **Scheduled runs** — move the bot loop server-side (cron) so it trades without the tab open
 
+## Deploying the public site (Vercel + VPS)
+
+The app deploys to Vercel as-is; the Python services live on the VPS behind
+Caddy (deploy/vps/). Wire them together with three environment variables in
+the Vercel project settings:
+
+| Variable | Value |
+|---|---|
+| `SIGNALS_URL` | `https://YOURDOMAIN` (Caddy routes `/api/signals` + `/api/forward` to the signal service) |
+| `TIPS_URL` | `https://YOURDOMAIN` (routes `/api/tips` to the tip jar) |
+| `ANTHROPIC_API_KEY` | optional — enables the narrator/advisor on the public site (mind the spend) |
+
+Notes: the `/research` page is the public centerpiece — live narrated
+strategy, forward-paper record, experiment ledger, tip jar. The trading
+dashboard also works publicly: each visitor gets their own $100k paper
+portfolio in their browser's localStorage, which makes a surprisingly good
+demo. CI runs the production build on every push.
+
 ## Known v1 limitations
 
 - Bots only run while the app is open in a browser tab
