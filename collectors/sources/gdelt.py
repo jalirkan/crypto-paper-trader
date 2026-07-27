@@ -58,5 +58,6 @@ def fetch_window(start: str, end: str, max_records: int = 250) -> list[tuple]:
             "sort": "hybridrel",
         },
         timeout=30,
+        retries=1,  # GDELT 429s need a LONG cooldown — handled per-day by the backfill
     )
     return parse_articles(payload)
