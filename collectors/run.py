@@ -66,6 +66,19 @@ def collect_funding(conn) -> None:
             db.log_run(conn, f"funding:{vsym}", False, 0, str(e))
 
 
+def record_signals(conn) -> None:
+    """Append today's strategy weights to the forward-paper ledger."""
+    try:
+        from research import signals  # local import: research layer is optional here
+
+        n = signals.record_daily(conn, ["BTC", "ETH", "SOL"])
+        db.log_run(conn, "signals", True, n)
+        if n:
+            print(f"  signals: +{n} forward-paper rows")
+    except Exception as e:  # noqa: BLE001
+        db.log_run(conn, "signals", False, 0, str(e))
+
+
 def collect_misc(conn) -> None:
     try:
         db.log_run(conn, "fng", True, db.upsert_fear_greed(conn, misc.fetch_fng()))
@@ -84,6 +97,7 @@ def cycle(conn) -> None:
     collect_candles(conn)
     collect_funding(conn)
     collect_misc(conn)
+    record_signals(conn)
     print(f"  cycle done in {time.time() - t0:.1f}s")
 
 

@@ -57,8 +57,19 @@ python -m unittest
 python -c "import sqlite3; c=sqlite3.connect('data/archive.db'); [print(f'{t}: {c.execute(f\"SELECT COUNT(*) FROM {t}\").fetchone()[0]} rows') for t in ('candles','funding','news','fear_greed','stablecoins')]"
 ```
 
+## Backtesting + live signals
+
+```powershell
+python -m research.backtest.run              # trend baselines vs buy-and-hold
+python -m research.signal_service            # live strategy state on :8091
+```
+
+The signal service powers the dashboard's narrator panel (run it alongside
+`npm run dev`). The collector loop records the strategy's daily weights into
+the `forward_paper` table — that immutable ledger is the live track record,
+started 2026-07-26. First backtest findings: `experiments.md` (EXP-001).
+
 ## Coming next (per RESEARCH_PLAN.md)
 
-- Weeks 2–3: backtest engine + trend baselines (adds pandas — venv starts then)
 - Weeks 4–5: LLM news classifier + event studies, funding-harvest sim
-- Weeks 6–8: signal service + dashboard research page
+- Weeks 6–8: public read-only deploy, tips widget, VPS signal service

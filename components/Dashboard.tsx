@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdvisorPanel from "./AdvisorPanel";
 import BotsPanel from "./BotsPanel";
+import NarratorPanel from "./NarratorPanel";
 import EquityChart from "./EquityChart";
 import HoldingsTable from "./HoldingsTable";
 import MarketTable from "./MarketTable";
@@ -106,6 +107,15 @@ function DashboardInner() {
         </div>
 
         <div className="col">
+          <section className="panel">
+            <div className="panel-head">
+              <h2>Live Strategy · Forward Paper</h2>
+            </div>
+            <div className="panel-body">
+              <NarratorPanel />
+            </div>
+          </section>
+
           <section className="panel">
             <div className="panel-head">
               <h2>Strategy Bots</h2>
