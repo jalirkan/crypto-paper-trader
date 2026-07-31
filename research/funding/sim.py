@@ -25,6 +25,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import random
 import sqlite3
 import time
 from pathlib import Path
@@ -91,6 +92,51 @@ def simulate(
     }
 
 
+def bootstrap_apr_ci(
+    rates: list[float],
+    enter_thr: float = 0.08,
+    exit_thr: float = 0.02,
+    n_boot: int = 400,
+    block: int = 90,
+    seed: int = 11,
+) -> tuple[float, float]:
+    """95% CI on APR via stationary block bootstrap.
+
+    Blocks (~1 month of 8h epochs) preserve the regime persistence that makes
+    funding autocorrelated; an iid bootstrap would shatter it and report an
+    interval far too narrow. Required by the project's uncertainty rule — a
+    bare APR is a bug, and a point estimate near the decision threshold is
+    exactly where that bug does damage.
+    """
+    rng = random.Random(seed)
+    n = len(rates)
+    if n < block * 3:
+        return (float("nan"), float("nan"))
+    out = []
+    for _ in range(n_boot):
+        s: list[float] = []
+        while len(s) < n:
+            i = rng.randrange(0, n - block)
+            s.extend(rates[i : i + block])
+        out.append(simulate(s[:n], enter_thr, exit_thr)["apr"])
+    out.sort()
+    k = max(1, int(0.025 * n_boot))
+    return (out[k], out[-k])
+
+
+def yearly_apr(rows: list[tuple[int, float]], **kw) -> dict[str, float]:
+    """APR per calendar year — the check that separates a live premium from a
+    historical average dominated by one regime."""
+    by_year: dict[str, list[float]] = {}
+    for ts, rate in rows:
+        by_year.setdefault(time.strftime("%Y", time.gmtime(ts / 1000)), []).append(rate)
+    return {
+        y: simulate(rr, **kw)["apr"]
+        for y, rr in sorted(by_year.items())
+        if len(rr) >= 200
+    }
+
+
 def load_rates(symbol: str, db_path: str | Path | None = None) -> list[float]:
     conn = sqlite3.connect(f"file:{db_path or DEFAULT_DB}?mode=ro", uri=True, timeout=10)
     try:
@@ -119,13 +165,37 @@ def main() -> None:
         )
 
     res = simulate(rates, args.enter, args.exit_thr)
+    lo, hi = bootstrap_apr_ci(rates, args.enter, args.exit_thr)
     print(f"{args.symbol}: {res['epochs']} epochs ({res['years']}y)")
     print(
-        f"  APR {res['apr']*100:+.2f}%  MaxDD {res['max_dd']*100:.2f}%  "
-        f"entries {res['entries']}  in-position {res['time_in_position']*100:.0f}%"
+        f"  APR {res['apr']*100:+.2f}%  95% CI [{lo*100:+.2f}%, {hi*100:+.2f}%]  "
+        f"MaxDD {res['max_dd']*100:.2f}%  entries {res['entries']}  "
+        f"in-position {res['time_in_position']*100:.0f}%"
     )
-    verdict = "KEEP (≥5% APR bar)" if res["apr"] >= 0.05 else "KILL (below 5% APR bar)"
+
+    # Three outcomes decided against the INTERVAL, not the point estimate.
+    if lo > 0.05:
+        verdict = "KEEP (interval clears the 5% bar)"
+    elif hi < 0.05:
+        verdict = "KILL (interval below the 5% bar)"
+    else:
+        verdict = "INCONCLUSIVE (interval straddles the 5% bar)"
     print(f"  Pre-registered verdict: {verdict}")
+
+    conn = sqlite3.connect(f"file:{args.db or DEFAULT_DB}?mode=ro", uri=True, timeout=10)
+    try:
+        rows = conn.execute(
+            "SELECT ts, rate FROM funding WHERE symbol=? ORDER BY ts", (args.symbol,)
+        ).fetchall()
+    finally:
+        conn.close()
+    per_year = yearly_apr(rows, enter_thr=args.enter, exit_thr=args.exit_thr)
+    if per_year:
+        print("  per-year: " + "  ".join(f"{y} {a*100:+.1f}%" for y, a in per_year.items()))
+        recent = list(per_year.values())[-2:]
+        if recent and max(recent) < 0.02:
+            print("  ⚠ the premium is dormant in the most recent years — a multi-year")
+            print("    average here describes a regime that has ended, not a live edge.")
 
     stamp = time.strftime("%Y-%m-%d")
     out = ROOT / "research" / "reports" / f"funding_{args.symbol}_{stamp}.md"

@@ -43,6 +43,36 @@ class TestFundingSim(unittest.TestCase):
         free = simulate(rich_year + dead_year, leg_cost=0.0)
         self.assertLess(res["final_equity"], free["final_equity"])  # costs matter
 
+    def test_bootstrap_ci_brackets_the_point_estimate(self):
+        from research.funding.sim import bootstrap_apr_ci
+
+        rates = [RICH] * (EPOCHS_PER_DAY * 365 * 2)
+        apr = simulate(rates)["apr"]
+        lo, hi = bootstrap_apr_ci(rates, n_boot=60)
+        self.assertLessEqual(lo, apr + 1e-9)
+        self.assertGreaterEqual(hi, apr - 1e-9)
+
+    def test_ci_is_wide_when_the_premium_is_episodic(self):
+        """A yield concentrated in one window must NOT read as a confident rate."""
+        from research.funding.sim import bootstrap_apr_ci
+
+        rich_burst = [RICH * 3] * (EPOCHS_PER_DAY * 120)
+        dead = [0.0] * (EPOCHS_PER_DAY * 600)
+        lo, hi = bootstrap_apr_ci(rich_burst + dead, n_boot=120)
+        self.assertGreater(hi - lo, 0.02)  # interval must expose the episodicity
+
+    def test_yearly_apr_separates_regimes(self):
+        from research.funding.sim import yearly_apr
+
+        hour = 8 * 3600 * 1000
+        t2024 = 1704067200000  # 2024-01-01
+        t2025 = 1735689600000  # 2025-01-01
+        rows = [(t2024 + i * hour, RICH) for i in range(EPOCHS_PER_DAY * 300)]
+        rows += [(t2025 + i * hour, 0.0) for i in range(EPOCHS_PER_DAY * 300)]
+        per = yearly_apr(rows)
+        self.assertGreater(per["2024"], 0.05)      # live in the rich year
+        self.assertAlmostEqual(per["2025"], 0.0, places=3)  # dead in the next
+
     def test_no_lookahead_at_decision_epoch(self):
         # A monster rate at the FINAL epoch can't affect entry decisions
         # (decisions use rates strictly before the current epoch).

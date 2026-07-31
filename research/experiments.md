@@ -119,6 +119,60 @@ Disclosures: The generator (Claude) had seen LAB-001's holdout report and
              Claude's top-3 were outside the finalize protocol, are reported
              here, and selected nothing.
 
+## EXP-006 · 2026-07-31 · Funding harvest: a real premium that has already gone
+
+Hypothesis:  Perp funding paid by crowded longs is harvestable delta-neutral
+             (long spot / short perp). Highest pre-registered odds of anything
+             in the plan (~60–75%), because it is a structural risk premium
+             rather than directional alpha. Kill bar written in the sim's
+             docstring long before data existed: **net APR ≥ 5%**.
+Config:      Fixed hysteresis, no grid: enter when trailing 7-day annualized
+             funding > 8%, exit below 2%. 30 bps round trip (two legs, both
+             sides). BTCUSDT/ETHUSDT/SOLUSDT, 3,195 epochs each (2023-08 →
+             2026-06, 2.9 years).
+Data:        Unblocked without the planned VPS — the futures API geo-blocks US
+             IPs, but Binance's static mirror serves the same history and does
+             not. See collectors/sources/binance_vision.py.
+Result:      Headline APRs cluster on the bar: BTC +4.67%, ETH +5.13%,
+             SOL +4.95%, with tiny drawdowns (−0.85% to −1.44%) exactly as a
+             delta-neutral carry trade should. Taken at face value, ETH
+             "passes" by 0.13pp.
+             It does not. Two checks kill it:
+             (1) **Intervals.** Block-bootstrap 95% CIs are [+1.4%, +7.2%],
+                 [+1.1%, +8.1%], [+0.3%, +6.9%]. All three straddle 5% →
+                 INCONCLUSIVE under the project's three-outcome rule. The
+                 point estimates cannot distinguish these symbols from each
+                 other or from the threshold.
+             (2) **Per-year decomposition, which is the real finding.**
+                 2023: +5.4/+5.8/+6.2%. 2024: +9.9/+11.7/+12.2%.
+                 2025: +0.5/−0.1/−0.8%. 2026: 0.0% on all three — the strategy
+                 never entered a position, because funding never got rich
+                 enough to trigger. The entire multi-year APR is a fossil of
+                 the 2023–24 bull market. The mechanism has paid nothing for
+                 roughly eighteen months.
+Verdict:     KILL as a live sleeve. KEEP the finding, which is more useful
+             than a pass would have been: the premium is real, well understood,
+             and *conditional on leveraged-long crowding* — so it pays in
+             euphoria and disappears in bear and chop, which is precisely when
+             a diversifying sleeve would have to earn its place. Revisit only
+             if funding regimes return, and only via the live signal, never via
+             the historical average.
+Caveats:     Unmodelled costs are all negative — basis convergence, margin
+             interest, liquidation mechanics, exchange counterparty risk — so
+             true net sits BELOW these figures. Single venue. The 8%/2%
+             thresholds were fixed a priori and never tuned; tuning them to
+             rescue the result would be exactly the failure mode this ledger
+             exists to prevent.
+Code fix:    The simulator originally printed a bare APR and a two-way verdict,
+             which is how "ETH passes at 5.13%" nearly became a finding. It now
+             computes a stationary block-bootstrap CI (blocks preserve funding's
+             regime persistence; an iid bootstrap would report an interval far
+             too narrow), decides against the interval with three outcomes, and
+             prints a per-year breakdown with an explicit warning when the
+             recent years are dormant. Three regression tests, including one
+             asserting that an episodic premium produces a WIDE interval rather
+             than a confident rate.
+
 ## EXP-005 · 2026-07-31 · LLM event study: 93k headlines, 10k events, no drift
 
 Hypothesis:  Slow-moving fundamental news produces multi-hour drift that
