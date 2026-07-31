@@ -13,8 +13,68 @@ why it's manual. Budget ~30–45 min active time (signet sync runs unattended).
 
 ## 1. Get the VPS (~$5/mo)
 
-Hetzner (or any provider): Ubuntu 24.04, 2+ GB RAM, 40 GB disk, x86.
-Add your SSH key. Note the IP.
+### What a VPS actually is
+
+A Virtual Private Server is a Linux computer you rent by the hour in
+someone else's data centre. There is no screen and no desktop — you reach it
+only through a terminal over SSH, and it runs whether or not your own machine
+is on. That last part is the whole point here: the collectors, the signal
+service and the Lightning node need to be up 24/7, and this box has a
+non-US IP so Binance's futures API will actually answer it.
+
+It is also **disposable**. Everything on it is rebuilt by `install.sh` from
+this repo, so if you wreck it, delete it and make a new one. That is the
+normal workflow, not a failure.
+
+### Where to get one
+
+| Provider | Cost | Notes |
+|---|---|---|
+| **Hetzner Cloud CX22** (recommended) | ~€4.35/mo | 2 vCPU, 4 GB RAM, 40 GB NVMe. German company, EU regions only — which is exactly what we need. Cheapest credible option. |
+| DigitalOcean Basic Droplet | ~$6/mo | Slightly pricier, but the friendliest UI and the best beginner docs on the internet. Pick Frankfurt or Amsterdam. |
+| Vultr / Linode | ~$5–6/mo | Equivalent; pick a European region. |
+| Oracle Cloud Always Free | $0 | Genuinely free ARM instances in non-US regions. Fussier signup, and Oracle may reclaim idle instances. Viable if you'd rather not pay. |
+
+Prices verified 2026-07-31; check the provider before assuming.
+
+### Ordering one (Hetzner)
+
+1. Sign up at **hetzner.com/cloud**. New accounts are sometimes asked for ID
+   verification, which can take a few hours — start this before you plan to
+   build anything.
+2. Create a project, then **Add Server**:
+   - **Location:** Falkenstein, Nuremberg, or Helsinki. **Not a US region** —
+     a US IP stays geo-blocked and the whole exercise fails.
+   - **Image:** Ubuntu 24.04
+   - **Type:** CX22 (shared vCPU, x86)
+   - **SSH key:** paste your public key (below). Prefer this over a password.
+3. Note the server's IP address. That plus your SSH key is everything the
+   deploy needs.
+
+### Making an SSH key (Windows, built in)
+
+```powershell
+ssh-keygen -t ed25519 -C "cpt-vps"          # Enter through the prompts
+type $env:USERPROFILE\.ssh\id_ed25519.pub   # paste THIS into Hetzner
+```
+
+The `.pub` file is public and safe to paste anywhere. The file without
+`.pub` is your private key — it never leaves your machine, and losing it
+means rebuilding the server.
+
+Then connect with `ssh root@YOUR_IP` and you're in.
+
+### What to know going in
+
+- **It is exposed to the internet from minute one.** `install.sh` configures
+  a firewall (ufw) that opens only SSH, HTTP/S, and the Lightning p2p port.
+  Run it early.
+- **Billing is hourly.** Deleting the server stops the charge; there is no
+  contract. Snapshots and backups cost extra and are optional.
+- **You are root.** You can break anything — and rebuild it in ten minutes
+  from this repo, which is why that's acceptable.
+- **The disk is not backed up by default.** Nothing irreplaceable should live
+  only here. The archive can be re-collected; the LND seed lives on paper.
 
 ## 2. Bootstrap
 
