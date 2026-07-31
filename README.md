@@ -1,6 +1,46 @@
 # Crypto Paper Trader
 
-Paper-trade crypto with live market data, automated strategy bots, and an optional Claude-powered AI advisor. Built with Next.js 15 + TypeScript, zero runtime dependencies beyond React. Simulated money only — educational project, not financial advice.
+A crypto paper-trading app **and** the quantitative research programme that
+tried to find an edge for it — including the part most projects leave out:
+what happened when the edges didn't survive testing.
+
+**Six pre-registered experiments. Six honest nulls.** Every kill criterion was
+written before the run; every failed idea is still in the ledger, with its
+numbers. The one survivor — Donchian breakout with volatility targeting — is
+recorded as a *candidate under forward paper trading*, not a strategy that
+works. Simulated money throughout; nothing here is financial advice.
+
+| | |
+|---|---|
+| **The experiment ledger** | [`research/experiments.md`](./research/experiments.md) — the honest core |
+| **How the work was split between two AI agents** | [`AGENTS.md`](./AGENTS.md) |
+| **Research method and remaining edge paths** | [`RESEARCH_PLAN.md`](./RESEARCH_PLAN.md) |
+
+### What the six experiments found
+
+- **EXP-001** Trend baselines: MA-cross and time-series momentum collapse out
+  of sample; Donchian survives walk-forward on BTC/ETH/SOL at roughly half the
+  drawdown of buy-and-hold. **The only survivor.**
+- **EXP-002/3/4** Risk overlays: volatility targeting kept; Fear & Greed and
+  stablecoin-flow gates killed.
+- **LAB-001/2/3** An autonomous strategy-search lab with a sealed holdout and
+  deflated-Sharpe statistics: 274 random candidates, then LLM-generated ones,
+  then a multi-asset campaign. Every finalist rejected. Along the way it
+  measured that an LLM hypothesis engine is ~3× more efficient *per trial*
+  than random search — and that this still isn't enough to beat trial-counting
+  statistics.
+- **EXP-005** LLM event study: 93,566 news headlines classified, 10,144 events.
+  No tradeable drift at any horizon; at +1h the interval is ±0.02%, which
+  *rules out* an edge rather than merely failing to find one. The first run
+  reported five candidates — all artifacts of comparing a signed metric to an
+  unsigned control. Fixing that erased them.
+- **EXP-006** Delta-neutral funding harvest: ~5% APR across three years, but
+  the per-year decomposition shows +10–12% in 2024 and ~0% since. The premium
+  is real and already gone.
+
+The through-line: the machinery repeatedly caught its own mistakes — a bad
+control, then a bug in the fix for that control, then a point estimate about
+to be reported without its interval. That is the actual deliverable.
 
 ## Features
 

@@ -143,6 +143,45 @@ Priority order matters: **news/social collectors ship in week 1** even though th
 | 2–3 | Backtest engine with cost model + walk-forward harness. Baselines: B&H, MA cross, Donchian, TSMOM, vol targeting. First experiments-ledger entries. First honest answer: *does trend beat holding, net of fees?* |
 | 4–5 | LLM classifier + event-study harness running over the growing archive. Perp/funding mechanics in paper engine; funding-harvest simulation. |
 | 6–8 | Risk layer + sleeve combination. FastAPI signal service. Dashboard Research page: sleeve equity curves vs BTC, live signals, classified event feed. Forward paper period officially starts. |
+## Phase change — 2026-07-31: research closed, consolidation opened
+
+Six pre-registered experiments, six nulls. The search phase is **deliberately
+closed**, and the reason is worth recording because it is the decision this
+whole apparatus exists to make possible.
+
+The project is not data-limited; it is **hypothesis-limited**. Every experiment
+had the same shape — take public data, find a pattern, test it honestly — and
+adding options, order-book or on-chain data would only make that same shape
+more expensive. The hypotheses that would actually work require faster
+infrastructure, capital scale, or non-public information, none of which are
+available at this resource level. That is the ceiling, and it sits exactly
+where market-efficiency arguments say it should.
+
+Continuing to search from here would mean feeding a well-built machine until
+something passes — which is the definition of p-hacking, and the failure mode
+every rule in this document was written to prevent. **The machine's value is
+that it says no.** Six nulls with pre-registered criteria is a stronger result
+than a seventh experiment that finally "works".
+
+**What consolidation means:**
+1. Finish and deploy the public research page (Claude Code owns this).
+2. Let the forward-paper ledger accrue — it is the only evidence that still
+   improves with time, and it needs months, not commits.
+3. Keep collectors running; the archive appreciates whether or not anyone is
+   looking at it.
+4. Monthly review ritual only: read the ledger, check the sleeve against
+   benchmarks, decide keep/kill. No new experiments without a written
+   hypothesis and kill criterion.
+5. Write it up. The audience for this project is a hiring manager, not a
+   counterparty.
+
+**Reopening criteria** — the search phase reopens only if one of these is
+true, not because a new idea feels promising:
+- The forward-paper record diverges materially from the backtest (that is a
+  finding either way, and a reason to investigate).
+- A funding-rate regime returns, reactivating EXP-006's dormant premium.
+- Cross-sectional momentum (below) is run as the one remaining cheap test.
+
 ### Remaining edge paths, ranked (as of 2026-07-31, after EXP-005)
 
 Five experiments, five nulls. What is left that has NOT been tested:
