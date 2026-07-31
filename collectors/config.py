@@ -32,6 +32,9 @@ RSS_FEEDS = [
 
 # Backfill depth
 DAILY_BACKFILL_DAYS = 3 * 365
-HOURLY_BACKFILL_DAYS = 365
+# Must cover the news archive (2023-08 →), or event studies can only measure
+# the ~2% of events that fall inside the price window. Binance's public data
+# mirror is not rate-limited the way GDELT is, so depth here is nearly free.
+HOURLY_BACKFILL_DAYS = 3 * 365 + 30
 
 USER_AGENT = "crypto-paper-trader-collector/0.1 (personal research project)"
