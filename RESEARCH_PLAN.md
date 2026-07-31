@@ -147,11 +147,15 @@ Priority order matters: **news/social collectors ship in week 1** even though th
 
 Five experiments, five nulls. What is left that has NOT been tested:
 
-1. **Funding harvest (delta-neutral)** — simulator built (`research/funding/`),
-   never run on real data because Binance funding is geo-blocked from a US
-   residential IP. Highest remaining odds (~60–75% per §1) because it is a
-   structural risk premium, not directional alpha. **Blocked only on the VPS.**
-   This is the single biggest untested thing in the project.
+1. **Funding harvest (delta-neutral)** — simulator built (`research/funding/`).
+   Highest remaining odds (~60–75% per §1) because it is a structural risk
+   premium, not directional alpha. **No longer blocked:** the futures *API*
+   geo-blocks US IPs, but Binance's static mirror (data.binance.vision) serves
+   the same history as monthly CSV dumps and is not geo-restricted — verified
+   2026-07-31, HTTP 200 from a US residential connection. `collectors/sources/
+   binance_vision.py` pulls it in 37 requests per symbol instead of thousands
+   of paginated API calls. Run `python -m collectors.backfill --funding`, then
+   `python -m research.funding.sim`.
 2. **Cross-sectional momentum** — everything tested so far is time-series
    (is THIS asset trending?). Ranking the 10-coin universe and holding the top
    N is a genuinely different, well-documented effect, and the archive already

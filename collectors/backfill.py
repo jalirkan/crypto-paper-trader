@@ -17,7 +17,7 @@ import time
 from . import db
 from .config import COINS, DAILY_BACKFILL_DAYS, FUNDING_SYMBOLS, HOURLY_BACKFILL_DAYS
 from .http import HttpError
-from .sources import binance, coinbase, misc
+from .sources import binance, binance_vision, coinbase, misc
 
 SLEEP_BINANCE = 0.25
 SLEEP_COINBASE = 0.4
@@ -77,25 +77,53 @@ def backfill_candles(conn) -> None:
                 db.log_run(conn, f"backfill:candles:{coin['sym']}:{tf}", False, 0, str(e))
 
 
-def backfill_funding(conn) -> None:
-    print("== Funding rates ==")
+def backfill_funding(conn, years: int = 3) -> None:
+    """Funding history from the static mirror (not geo-blocked), API as fallback.
+
+    The mirror serves monthly CSV dumps and works from anywhere; the futures
+    API geo-blocks US IPs. Mirror first, then fall back so the code still works
+    where the API is reachable.
+    """
+    from datetime import date, timedelta
+
+    print("== Funding rates (data.binance.vision mirror) ==")
+    end = date.today()
+    start_day = end - timedelta(days=years * 365)
+
     for vsym in FUNDING_SYMBOLS:
+        total = 0
+        failures = 0
         try:
-            last = db.max_ts(conn, "funding", "symbol=?", (vsym,))
-            start = (last + 1) if last else now_ms() - 3 * 365 * 86_400_000
-            total = 0
-            while start < now_ms():
-                rows = binance.fetch_funding(vsym, start)
-                if not rows:
-                    break
-                total += db.upsert_funding(conn, rows)
-                start = rows[-1][1] + 1
-                time.sleep(SLEEP_BINANCE)
-            print(f"  {vsym}: +{total} funding points")
+            for year, month in binance_vision.months_between(start_day, end):
+                try:
+                    rows = binance_vision.fetch_funding_month(vsym, year, month)
+                    if rows:
+                        total += db.upsert_funding(conn, rows)
+                    print(f"  {vsym} {year}-{month:02d}: {total} points", end="\r")
+                except Exception as e:  # noqa: BLE001 — one month must not kill the symbol
+                    failures += 1
+                    if failures <= 3:
+                        print(f"\n  {vsym} {year}-{month:02d}: {str(e)[:90]}")
+                time.sleep(0.3)
+            print(f"  {vsym}: +{total} funding points ({failures} month(s) failed)   ")
             db.log_run(conn, f"backfill:funding:{vsym}", True, total)
         except Exception as e:  # noqa: BLE001
-            print(f"  {vsym}: FAILED — {e} (geo-blocked? runs fine from a VPS)")
-            db.log_run(conn, f"backfill:funding:{vsym}", False, 0, str(e))
+            print(f"  {vsym}: mirror FAILED — {e}; trying the API…")
+            try:
+                last = db.max_ts(conn, "funding", "symbol=?", (vsym,))
+                start = (last + 1) if last else now_ms() - years * 365 * 86_400_000
+                while start < now_ms():
+                    rows = binance.fetch_funding(vsym, start)
+                    if not rows:
+                        break
+                    total += db.upsert_funding(conn, rows)
+                    start = rows[-1][1] + 1
+                    time.sleep(SLEEP_BINANCE)
+                print(f"  {vsym}: +{total} via API")
+                db.log_run(conn, f"backfill:funding:{vsym}", True, total)
+            except Exception as e2:  # noqa: BLE001
+                print(f"  {vsym}: API also failed — {e2}")
+                db.log_run(conn, f"backfill:funding:{vsym}", False, 0, str(e2))
 
 
 def backfill_misc(conn) -> None:
