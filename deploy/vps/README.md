@@ -51,6 +51,57 @@ Prices verified 2026-07-31; check the provider before assuming.
 3. Note the server's IP address. That plus your SSH key is everything the
    deploy needs.
 
+### Oracle Cloud Always Free (the $0 path)
+
+Genuinely free and more machine than Hetzner sells for €4 — but it has three
+traps that are painful *after* the fact, so read all three before signing up.
+
+**Trap 1 — the home region is permanent.** Oracle asks for a "home region"
+during signup and **it can never be changed**; fixing it means a whole new
+account. Pick a non-US region that offers Ampere A1: Frankfurt, Amsterdam,
+London, or Zurich. A US home region reproduces the exact geo-block this VPS
+exists to escape.
+
+**Trap 2 — idle instances get reclaimed.** Oracle deems an instance idle if,
+over 7 days, its 95th-percentile CPU, network, *and* memory use are all under
+20% (A1 shapes). Our workload is deliberately light, so this box is a
+candidate for reclamation. Two consequences:
+  - For collectors, the archive, and the signal service: harmless. Everything
+    is reproducible from this repo; rebuild and re-collect.
+  - For **LND with real funds it is not harmless** — channel state is not
+    reproducible from the seed alone. So: run signet here freely (worthless
+    coins), and do not put mainnet funds on a reclaimable instance. Either
+    upgrade the account to Pay As You Go (removes reclamation; you still pay
+    nothing while inside Always Free limits) or wait for a paid box.
+
+**Trap 3 — two firewalls.** Oracle's Ubuntu images carry restrictive iptables
+rules *in addition* to the cloud-console Security List. Classic symptom: you
+open a port in the console, ufw says it's allowed, and nothing connects.
+`install.sh` now detects Oracle and clears the conflicting rules, but you
+must **also** add ingress rules in the console:
+Networking → your VCN → Security Lists → Default Security List → Add Ingress
+Rules for TCP 80, 443, and 9735 from 0.0.0.0/0.
+
+**Ordering it**
+
+1. Sign up at **cloud.oracle.com** → Always Free. A card is required for
+   identity verification; Always Free resources are not charged.
+2. **Home region:** Frankfurt / Amsterdam / London / Zurich. Permanent.
+3. Compute → Create Instance:
+   - **Image:** Canonical Ubuntu 24.04
+   - **Shape:** `VM.Standard.A1.Flex` (Ampere ARM). Free-tier accounts now get
+     2 OCPU / 12 GB; Pay-As-You-Go accounts still get 4 OCPU / 24 GB. Either
+     is ample — 2/12 dwarfs the €4 Hetzner box.
+   - Paste your SSH public key.
+4. If you hit **"Out of host capacity"** — common on A1 — try a different
+   availability domain, retry later, or drop to 1 OCPU. It is capacity, not
+   your account.
+5. Note the public IP. Log in as **`ubuntu`**, not root:
+   `ssh ubuntu@YOUR_IP`, then `sudo -i` for the install.
+
+Architecture note: `install.sh` detects x86 vs ARM and fetches the matching
+official bitcoind/LND builds, so ARM needs no special handling.
+
 ### Making an SSH key (Windows, built in)
 
 ```powershell

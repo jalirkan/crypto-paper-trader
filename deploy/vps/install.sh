@@ -12,9 +12,17 @@ set -euo pipefail
 
 BITCOIN_VERSION="${BITCOIN_VERSION:-28.1}"     # check bitcoincore.org for latest
 LND_VERSION="${LND_VERSION:-v0.18.5-beta}"     # check github.com/lightningnetwork/lnd/releases
-ARCH="x86_64-linux-gnu"
-LND_ARCH="linux-amd64"
 REPO_DIR="/opt/crypto-paper-trader"
+
+# Architecture detection — Oracle Cloud's free tier is ARM (Ampere A1), most
+# other providers are x86. Both publish official builds; picking the wrong one
+# fails at the first tarball, so detect rather than assume.
+case "$(uname -m)" in
+  x86_64)  ARCH="x86_64-linux-gnu"; LND_ARCH="linux-amd64" ;;
+  aarch64) ARCH="aarch64-linux-gnu"; LND_ARCH="linux-arm64" ;;
+  *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+echo "== detected $(uname -m): bitcoin=${ARCH} lnd=${LND_ARCH} =="
 
 echo "== users and directories =="
 id -u bitcoin &>/dev/null || useradd -r -m -s /usr/sbin/nologin bitcoin
@@ -30,6 +38,20 @@ apt-get install -y -qq python3 git curl ufw debian-keyring debian-archive-keyrin
 echo "== firewall (SSH, HTTP/S for Caddy, 9735 for LND p2p) =="
 ufw allow 22/tcp && ufw allow 80/tcp && ufw allow 443/tcp && ufw allow 9735/tcp
 ufw --force enable
+
+# Oracle Cloud ships Ubuntu with restrictive iptables rules ON TOP of any
+# cloud-console Security List, and they survive ufw. Symptom: ports look open
+# in the console and in ufw, but nothing connects. Drop the blanket REJECTs so
+# ufw is the single source of truth.
+if [ -f /etc/oci-hostname.conf ] || grep -qi oracle /sys/class/dmi/id/chassis_asset_tag 2>/dev/null; then
+  echo "== Oracle Cloud detected: clearing conflicting iptables REJECT rules =="
+  iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
+  iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
+  apt-get install -y -qq netfilter-persistent iptables-persistent >/dev/null 2>&1 || true
+  netfilter-persistent save >/dev/null 2>&1 || true
+  echo "   note: also open 80/443/9735 in the OCI console under"
+  echo "   Networking > VCN > Security Lists > Ingress Rules"
+fi
 
 echo "== bitcoin core ${BITCOIN_VERSION} (signet, pruned) =="
 cd /tmp
