@@ -143,6 +143,34 @@ Priority order matters: **news/social collectors ship in week 1** even though th
 | 2–3 | Backtest engine with cost model + walk-forward harness. Baselines: B&H, MA cross, Donchian, TSMOM, vol targeting. First experiments-ledger entries. First honest answer: *does trend beat holding, net of fees?* |
 | 4–5 | LLM classifier + event-study harness running over the growing archive. Perp/funding mechanics in paper engine; funding-harvest simulation. |
 | 6–8 | Risk layer + sleeve combination. FastAPI signal service. Dashboard Research page: sleeve equity curves vs BTC, live signals, classified event feed. Forward paper period officially starts. |
+### Remaining edge paths, ranked (as of 2026-07-31, after EXP-005)
+
+Five experiments, five nulls. What is left that has NOT been tested:
+
+1. **Funding harvest (delta-neutral)** — simulator built (`research/funding/`),
+   never run on real data because Binance funding is geo-blocked from a US
+   residential IP. Highest remaining odds (~60–75% per §1) because it is a
+   structural risk premium, not directional alpha. **Blocked only on the VPS.**
+   This is the single biggest untested thing in the project.
+2. **Cross-sectional momentum** — everything tested so far is time-series
+   (is THIS asset trending?). Ranking the 10-coin universe and holding the top
+   N is a genuinely different, well-documented effect, and the archive already
+   has 3 years of daily bars for it. Cheapest real experiment available.
+3. **Lower frequency / longer holds** — the one axis where an individual is
+   structurally advantaged: no capacity limit, no redemption pressure, and the
+   ability to sit through a drawdown that would end a fund. Weekly or monthly
+   rebalancing, tested honestly.
+4. **Execution-quality edges** — maker rebates, cross-venue funding spreads.
+   Real but capacity-tiny and needs funded accounts; the OMS is ready if it
+   ever matters.
+5. **Regime models (HMM)** — offered and deferred; EXP-003/004 killed both
+   gating overlays, so the prior on any regime filter is now low.
+
+The honest note after five nulls: the remaining edge is mostly **risk
+management and behaviour** — sizing, not blowing up, staying invested — plus
+the structural yield in (1). That is a less exciting sentence than "we found
+alpha" and it is the one the evidence supports.
+
 | Ongoing (monthly) | Review ritual: ledger review, sleeve report vs benchmarks, kill/keep decisions. **Decision gates:** X API ($200/mo) only if free-source event studies show near-significant drift. Real-money micro-pilot (~$100, purely to calibrate true slippage) only after a sleeve survives 3 months of forward paper — optional, your call entirely. |
 
 ## 9. Budget
