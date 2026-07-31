@@ -91,13 +91,35 @@ def bootstrap_mean_ci(values: list[float], n_boot: int = BOOT) -> tuple[float, f
     )
 
 
-def control_mean(ts: list[int], closes: list[float], horizon_h: int, n: int) -> float:
-    """Mean |signed| return over random windows — the 'nothing happened' base rate."""
+def control_mean(
+    ts: list[int],
+    closes: list[float],
+    horizon_h: int,
+    n: int,
+    dirs: list[int] | None = None,
+) -> float:
+    """Base rate for the SIGNED event metric: random timing, same direction mix.
+
+    The control must be signed exactly like the statistic it benchmarks. An
+    unsigned control silently imports market drift: with a 2:1 bullish:bearish
+    label mix in a falling market, flipping the bearish third makes the event
+    mean less negative than raw returns for purely arithmetic reasons, and the
+    difference reads as 'drift'. That bug produced five false candidates at
+    +72h on 2026-07-31 before the bullish-vs-bearish diagnostic caught it
+    (both groups had identical forward returns). Drawing control signs from
+    the observed direction mix removes it: any remaining edge is timing and
+    information, not beta × imbalance.
+    """
     vals = []
     hi = len(ts) - horizon_h - 1
+    if hi < 2:
+        return 0.0
     for _ in range(n):
         i = random.randint(1, hi)
-        vals.append(closes[i + horizon_h] / closes[i] - 1.0)
+        r = closes[i + horizon_h] / closes[i] - 1.0
+        # Draw the sign, don't cycle: cycling a 300-long mix over 2000 draws
+        # replays the head of the list and skews the ratio (caught by test).
+        vals.append(r * (random.choice(dirs) if dirs else 1))
     return sum(vals) / len(vals)
 
 
@@ -117,6 +139,7 @@ def run_study(conn, min_conf: str) -> list[str]:
         lines.append(f"## {name} (n={len(evs)})\n")
         for h in HORIZONS_H:
             rets = []
+            dirs: list[int] = []
             for ev in evs:
                 for sym in ev["symbols"]:
                     ts, closes = series[sym]
@@ -125,12 +148,13 @@ def run_study(conn, min_conf: str) -> list[str]:
                     r = forward_return(ts, closes, ev["ts"], h)
                     if r is not None:
                         rets.append(ev["dir"] * r)
+                        dirs.append(ev["dir"])
             if len(rets) < 5:
                 lines.append(f"- +{h}h: n={len(rets)} — insufficient data")
                 continue
             mean, lo, hi_ = bootstrap_mean_ci(rets)
             ts_b, closes_b = series["BTC"]
-            ctrl = control_mean(ts_b, closes_b, h, 2000) if ts_b else 0.0
+            ctrl = control_mean(ts_b, closes_b, h, 2000, dirs) if ts_b else 0.0
             edge = mean - ctrl
             tradeable = len(rets) >= 20 and abs(edge) > COST and (lo > ctrl or hi_ < ctrl)
             flag = "  ← CANDIDATE" if tradeable else ""

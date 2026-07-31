@@ -90,6 +90,42 @@ class TestPlantedDrift(unittest.TestCase):
         self.assertEqual(len(events), 2)
 
 
+class TestControlIsDirectionMatched(unittest.TestCase):
+    """A drifting market plus imbalanced labels must NOT manufacture an edge."""
+
+    def setUp(self):
+        # Pure downward drift, no event information whatsoever.
+        self.ts = [T0 + i * HOUR for i in range(3000)]
+        self.closes = [50_000 * (0.99995**i) for i in range(3000)]
+        self.dirs = [1] * 200 + [-1] * 100  # 2:1 bullish, same as the real archive
+
+    def test_unsigned_control_is_biased_but_matched_control_is_not(self):
+        from research.events.study import control_mean
+
+        raw = control_mean(self.ts, self.closes, 72, 2000)          # old behaviour
+        matched = control_mean(self.ts, self.closes, 72, 2000, self.dirs)
+
+        # The signed event mean on a pure-drift series equals the matched control.
+        signed_event_mean = sum(
+            d * (self.closes[i + 72] / self.closes[i] - 1.0)
+            for i, d in zip(range(100, 100 + len(self.dirs)), self.dirs)
+        ) / len(self.dirs)
+
+        bogus_edge = signed_event_mean - raw
+        honest_edge = signed_event_mean - matched
+        self.assertGreater(abs(bogus_edge), 0.001)      # old control invents >0.1%
+        self.assertLess(abs(honest_edge), 0.0002)       # matched control ≈ 0
+
+    def test_matched_control_tracks_the_direction_mix(self):
+        from research.events.study import control_mean
+
+        all_bull = control_mean(self.ts, self.closes, 72, 1000, [1] * 10)
+        all_bear = control_mean(self.ts, self.closes, 72, 1000, [-1] * 10)
+        self.assertLess(all_bull, 0)      # long a falling market
+        self.assertGreater(all_bear, 0)   # short a falling market
+        self.assertAlmostEqual(all_bull, -all_bear, places=3)
+
+
 class TestClassifierParse(unittest.TestCase):
     def test_parses_fenced_and_validates(self):
         text = """```json

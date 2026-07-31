@@ -119,6 +119,52 @@ Disclosures: The generator (Claude) had seen LAB-001's holdout report and
              Claude's top-3 were outside the finalize protocol, are reported
              here, and selected nothing.
 
+## EXP-005 · 2026-07-31 · LLM event study: 93k headlines, 10k events, no drift
+
+Hypothesis:  Slow-moving fundamental news produces multi-hour drift that
+             survives costs, and Claude can classify events well enough to
+             isolate it (PLAN §5.2, the marquee experiment).
+Config:      93,566 GDELT headlines (2023-08 → 2026-07) + RSS, all classified
+             by claude-haiku into {relevant, event_type, assets, direction,
+             magnitude, novelty, confidence}. Filters: relevant, novel,
+             direction≠0, confidence ≥ medium; 6h story clustering → 10,144
+             events. Signed forward returns at +1/4/24/72h vs bootstrap
+             control. Bar: n≥20, |edge| > 2× round-trip (0.30%), CI excludes
+             control.
+Result:      NO TRADEABLE DRIFT. Short horizons are precisely null: at +1h,
+             n=4,442 with edge +0.01% and CI ±0.02% — this does not merely
+             fail to find an edge, it rules out anything above a few basis
+             points. The decisive diagnostic: bullish and bearish events had
+             statistically identical forward returns at every horizon
+             (+72h: −0.570% vs −0.599%, difference CI [−0.21%, +0.28%]).
+             The direction label carries no return information.
+             One residual flag (regulation +72h, edge −0.31%) is the WRONG
+             SIGN — regulation events underperform their control — and with
+             40 bucket×horizon tests, ~2 flags at p≈0.05 are expected by
+             chance. Not pursued.
+Verdict:     KILL the event-driven sleeve. The classifier works (labels are
+             good: it marked the fully-anticipated 2024 halving direction=0);
+             the market simply prices this news before a retail pipeline can
+             act. This is the null the plan gave ~10% odds, measured rather
+             than assumed.
+Bug found:   The first run reported five candidates, all at +72h. They were
+             artifacts of comparing a SIGNED event metric against an UNSIGNED
+             control: with a 2:1 bullish:bearish label mix in a falling
+             market, flipping the bearish third mechanically produces a
+             less-negative mean. The control is now direction-matched (signs
+             drawn from the observed mix), which is what a control for a
+             signed statistic has to be. Two regression tests pin it, and
+             one of them caught a second bug in the fix itself (cycling a
+             300-long direction list over 2,000 draws replays its head and
+             skews the ratio — now sampled). Every false candidate vanished
+             under the corrected control.
+Caveats:     Hourly prices cover ~1 year of the 3-year news archive after the
+             candle backfill, so +72h samples are thinner than +1h. Lexical
+             dedupe may leave some story clusters. A different classification
+             schema, or intraday-timestamped newswire data rather than GDELT's
+             indexing lag, could still surface something — but not at these
+             horizons with this pipeline.
+
 ## LAB-003 · 2026-07-26 · Multi-asset search: min-across-BTC/ETH/SOL
 
 Hypothesis:  Requiring a candidate to score robustly on ALL THREE assets
