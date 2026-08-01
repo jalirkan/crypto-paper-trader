@@ -131,22 +131,30 @@ def forward_stats(conn: sqlite3.Connection, symbol: str) -> dict | None:
     from .backtest import metrics
 
     rows = conn.execute(
-        "SELECT weight, close FROM forward_paper WHERE symbol=? ORDER BY day",
+        "SELECT day, weight, close FROM forward_paper WHERE symbol=? ORDER BY day",
         (symbol,),
     ).fetchall()
     if len(rows) < 3:
         return {"symbol": symbol, "days": len(rows), "note": "forward ledger warming up"}
 
-    weights = [r[0] for r in rows]
-    closes = [r[1] for r in rows]
+    days = [r[0] for r in rows]
+    weights = [r[1] for r in rows]
+    closes = [r[2] for r in rows]
     res = engine.run(closes, weights, FEE_BPS, SLIP_BPS)
     bh = engine.buy_and_hold(closes, FEE_BPS, SLIP_BPS)
     return {
         "symbol": symbol,
-        "start": conn.execute(
-            "SELECT MIN(day) FROM forward_paper WHERE symbol=?", (symbol,)
-        ).fetchone()[0],
+        "start": days[0],
         "days": len(rows),
         "strategy": res.stats,
         "buy_hold": bh.stats,
+        # Equity series so the dashboard can plot the record against its
+        # benchmark rather than only quoting summary statistics. equity() emits
+        # one point per bar starting at 1.0, so both series align 1:1 with
+        # `days`. Additive: existing consumers of this payload are unaffected.
+        "curve": {
+            "days": days,
+            "strategy": res.equity(),
+            "buy_hold": bh.equity(),
+        },
     }

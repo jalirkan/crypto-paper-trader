@@ -81,6 +81,31 @@ class TestForwardLedger(unittest.TestCase):
         self.assertIn("buy_hold", s)
         self.assertEqual(s["days"], 4)
 
+    def test_forward_stats_curve_aligns_with_days(self):
+        """The dashboard plots these two series against `days`; if the lengths
+        ever drift apart the chart silently misdates the record."""
+        for i, (day, px, w) in enumerate(
+            [
+                ("2099-01-01", 110.0, 1.0),
+                ("2099-01-02", 112.0, 1.0),
+                ("2099-01-03", 111.0, 0.0),
+                ("2099-01-04", 115.0, 1.0),
+            ]
+        ):
+            self.conn.execute(
+                "INSERT INTO forward_paper VALUES (?,?,?,?,?,?)",
+                (day, "BTC", w, px, "{}", i),
+            )
+        s = signals.forward_stats(self.conn, "BTC")
+        curve = s["curve"]
+        self.assertEqual(len(curve["days"]), s["days"])
+        self.assertEqual(len(curve["strategy"]), s["days"])
+        self.assertEqual(len(curve["buy_hold"]), s["days"])
+        self.assertEqual(curve["days"][0], s["start"])
+        # Both series are indexed to 1.0 at the first recorded day.
+        self.assertEqual(curve["strategy"][0], 1.0)
+        self.assertEqual(curve["buy_hold"][0], 1.0)
+
 
 class TestParamSelection(unittest.TestCase):
     def test_params_come_from_grid_and_are_stable(self):
