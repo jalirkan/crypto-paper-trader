@@ -123,23 +123,46 @@ a scripted chaos-mode mock exchange; there is deliberately no real-exchange
 adapter until the forward-paper gate opens. Demo:
 `python -m execution.runner --mock`.
 
-## Deploying the public site (Vercel + VPS)
+## Deploying the public site (Vercel)
 
-The app deploys to Vercel as-is; the Python services live on the VPS behind
-Caddy (deploy/vps/). Wire them together with three environment variables in
-the Vercel project settings:
+The app deploys to Vercel with **no configuration and no backend**. All three
+environment variables below are optional; the site is designed for the case
+where none of them is set, because that is how it is currently deployed.
 
-| Variable | Value |
-|---|---|
-| `SIGNALS_URL` | `https://YOURDOMAIN` (Caddy routes `/api/signals` + `/api/forward` to the signal service) |
-| `TIPS_URL` | `https://YOURDOMAIN` (routes `/api/tips` to the tip jar) |
-| `ANTHROPIC_API_KEY` | optional — enables the narrator/advisor on the public site (mind the spend) |
+| Variable | Effect when set | Behaviour when absent |
+|---|---|---|
+| `SIGNALS_URL` | Base URL of the Python signal service — Caddy routes `/api/signals` + `/api/forward` to it | Live position and forward-paper stats are replaced by an explanation of what they are and where they come from |
+| `TIPS_URL` | Base URL of the Lightning tip jar (`/api/tips`) | Tip jar panel describes the stack instead of showing a payment address |
+| `ANTHROPIC_API_KEY` | Enables the narrator and the AI advisor (mind the spend) | Narrator button reports the missing key; everything else is unaffected |
 
-Notes: the `/research` page is the public centerpiece — live narrated
-strategy, forward-paper record, experiment ledger, tip jar. The trading
-dashboard also works publicly: each visitor gets their own $100k paper
-portfolio in their browser's localStorage, which makes a surprisingly good
-demo. CI runs the production build on every push.
+**Verified, not assumed** — a production build with all three unset:
+`/research` returns 200 with the full ledger rendered into the server HTML,
+`/api/experiments` returns 200, and `/api/signals`, `/api/tipjar` and
+`/api/narrate` return 503 which the UI handles as explanatory panels rather
+than error states.
+
+Two things make this work rather than merely degrade:
+
+- The `/research` page is **statically prerendered**, so the experiment ledger
+  is baked into the HTML at build time — it renders with no backend, no
+  database, and JavaScript disabled. `next.config.mjs` traces
+  `research/experiments.md` into the bundle; without that the ledger 404s on
+  Vercel while working perfectly in local dev.
+- The trading dashboard is entirely client-side: each visitor gets their own
+  $100k paper portfolio in localStorage, with live prices proxied through the
+  CoinGecko routes, which need no key.
+
+CI runs the production build on every push.
+
+### Dependency advisories
+
+`npm audit` reports 3 high-severity advisories in Next.js's own transitive
+dependencies (`postcss`, `sharp`/libvips). There is currently no Next.js
+release that resolves them — the advisory range covers every version through
+16.3.0-preview, and `npm audit fix --force` "resolves" it by downgrading to
+next@9.3.3, which is not a fix. Noted here rather than hidden: the postcss
+issues require processing attacker-supplied CSS, and the libvips CVEs reach
+this app only through `next/image`, which it does not use.
 
 ## Known v1 limitations
 
