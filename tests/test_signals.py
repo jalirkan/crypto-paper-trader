@@ -81,6 +81,13 @@ class TestForwardLedger(unittest.TestCase):
         self.assertIn("buy_hold", s)
         self.assertEqual(s["days"], 4)
 
+    def test_forward_stats_before_the_table_exists(self):
+        """A ledger that has not started is length zero, not a 500."""
+        bare = sqlite3.connect(":memory:")
+        s = signals.forward_stats(bare, "BTC")
+        self.assertEqual(s["days"], 0)
+        self.assertIn("note", s)
+
     def test_forward_stats_curve_aligns_with_days(self):
         """The dashboard plots these two series against `days`; if the lengths
         ever drift apart the chart silently misdates the record."""

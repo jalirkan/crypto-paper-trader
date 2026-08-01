@@ -3,23 +3,35 @@
 import { useEffect, useState } from "react";
 import { fmtPct } from "@/lib/format";
 import Figure from "./Figure";
+import ForwardCurve from "./ForwardCurve";
 
 /**
  * The forward-paper track record — the only performance claim this project is
  * willing to stand behind, and therefore the panel most able to mislead.
  *
- * Two rules are enforced here rather than left to judgment:
- *   1. Sample size is shown before any performance number, always.
- *   2. CAGR / Sharpe are WITHHELD until the forward ledger clears the 90-day
- *      gate from RESEARCH_PLAN §7. A Sharpe computed over five days is noise
- *      with a decimal point, and rendering it "just to have something there"
- *      is precisely the failure this project documents itself avoiding.
+ * Three rules are enforced here rather than left to judgment:
+ *
+ *   1. Every number comes from the payload. An earlier version of this file
+ *      hardcoded the ledger's start date and rendered a "6 / 90 days" progress
+ *      bar computed from that constant — while the forward_paper table did not
+ *      exist and held no rows. It looked like a measurement and was arithmetic
+ *      on a literal. Nothing here is derived from a date typed into the source.
+ *   2. Sample size is shown before any performance number.
+ *   3. CAGR and Sharpe are WITHHELD until the ledger clears the 90-day gate
+ *      from RESEARCH_PLAN §7. A Sharpe over a handful of days is noise with a
+ *      decimal point. The equity curve is shown as soon as there are points,
+ *      because a plotted series carries its own sample size: you can see how
+ *      short it is.
  */
 
 /** RESEARCH_PLAN §7: no "profitable" claim without ≥3 months of forward paper. */
 const CLAIM_GATE_DAYS = 90;
-/** First day written to the immutable forward ledger. */
-const LEDGER_START = "2026-07-26";
+
+interface Curve {
+  days: string[];
+  strategy: number[];
+  buy_hold: number[];
+}
 
 interface SymStats {
   symbol: string;
@@ -28,11 +40,7 @@ interface SymStats {
   note?: string;
   strategy?: { cagr: number; sharpe: number; max_dd: number; exposure?: number };
   buy_hold?: { cagr: number; sharpe: number; max_dd: number };
-}
-
-function daysSince(iso: string): number {
-  const ms = Date.now() - new Date(`${iso}T00:00:00Z`).getTime();
-  return Math.max(0, Math.floor(ms / 86_400_000));
+  curve?: Curve;
 }
 
 function Gate({ days }: { days: number }) {
@@ -50,9 +58,9 @@ function Gate({ days }: { days: number }) {
       </div>
       <div className="gate-note">
         Until this bar fills, performance statistics are withheld rather than
-        estimated. A Sharpe ratio over {days} day{days === 1 ? "" : "s"} carries
-        no information, and publishing one would undercut every other number on
-        this page.
+        estimated. A Sharpe ratio over {days} recorded day
+        {days === 1 ? "" : "s"} carries no information, and publishing one would
+        undercut every other number on this page.
       </div>
     </div>
   );
@@ -61,7 +69,6 @@ function Gate({ days }: { days: number }) {
 export default function ForwardStats() {
   const [rows, setRows] = useState<SymStats[] | null>(null);
   const [down, setDown] = useState(false);
-  const elapsed = daysSince(LEDGER_START);
 
   useEffect(() => {
     fetch("/api/signals")
@@ -70,78 +77,105 @@ export default function ForwardStats() {
       .catch(() => setDown(true));
   }, []);
 
-  const openGate = elapsed >= CLAIM_GATE_DAYS;
+  const recorded = rows?.reduce((m, s) => Math.max(m, s.days ?? 0), 0) ?? 0;
+  const started = recorded > 0;
 
   return (
     <div className="stack">
       <p className="lede">
         The forward ledger records the strategy&apos;s decided position every
-        day, live, and can never be backfilled. It began{" "}
-        <strong className="num">{LEDGER_START}</strong>. Backtests are research;
-        this is the record — and it is the only thing here that improves with
-        time rather than with cleverness.
+        day, live, and can never be backfilled. Backtests are research; this is
+        the record — and it is the only thing here that improves with time
+        rather than with cleverness.
       </p>
-
-      <Gate days={elapsed} />
 
       {down ? (
         <div className="notice">
-          <strong>The signal service is not hosted yet.</strong> It is a local
-          Python service (<code>python -m research.signal_service</code>) that
-          reads the forward ledger out of the archive; the public site has no
-          backend attached. The gate above is computed from the ledger&apos;s
-          start date, which is a fixed fact — but the per-symbol positions below
-          need the service running.
+          <strong>The signal service is not hosted, so this panel has no
+          data.</strong>{" "}
+          It is a local Python service (
+          <code>python -m research.signal_service</code>) that reads the ledger
+          out of the archive on a machine, not in this browser. How long the
+          record is, and whether it has started at all, are facts that live in
+          that archive — this page will not guess at them from a date written
+          into its own source.
         </div>
       ) : rows === null ? (
         <div className="empty">
           <span className="spin" />
         </div>
-      ) : rows.length === 0 ? (
-        <div className="notice">The forward ledger has no rows yet.</div>
-      ) : (
-        <div className="fwd-grid">
-          {rows.map((s) => {
-            const n = s.days ?? 0;
-            const showStats = openGate && s.strategy && s.buy_hold;
-            return (
-              <div className="fwd-card" key={s.symbol}>
-                <div className="fwd-head">
-                  <strong>{s.symbol}</strong>
-                  <span className="num faint">
-                    {n} day{n === 1 ? "" : "s"} recorded
-                    {s.start ? ` since ${s.start}` : ""}
-                  </span>
-                </div>
-                {showStats ? (
-                  <div className="fwd-figs">
-                    <Figure
-                      label="Strategy CAGR"
-                      value={fmtPct(s.strategy!.cagr * 100)}
-                      n={n}
-                      nUnit="days"
-                      noCi="interval not yet computed on the forward ledger"
-                      tone={s.strategy!.cagr >= 0 ? "good" : "bad"}
-                    />
-                    <Figure
-                      label="Buy & hold CAGR"
-                      value={fmtPct(s.buy_hold!.cagr * 100)}
-                      n={n}
-                      nUnit="days"
-                      noCi="benchmark, same window"
-                    />
-                  </div>
-                ) : (
-                  <div className="fwd-withheld">
-                    {s.note ? `${s.note} — ` : ""}
-                    performance statistics withheld until the {CLAIM_GATE_DAYS}-day
-                    gate opens
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      ) : !started ? (
+        <div className="notice">
+          <strong>The forward-paper clock has not started.</strong> The ledger
+          holds no recorded days yet. It begins on the first run of{" "}
+          <code>python -m collectors.run</code>, which records each
+          symbol&apos;s decided position once per day; until then there is no
+          track record, and this panel would rather say so than display an
+          empty chart with confident axes.
         </div>
+      ) : (
+        <>
+          <Gate days={recorded} />
+          <div className="fwd-grid">
+            {rows.map((s) => {
+              const n = s.days ?? 0;
+              const showStats = n >= CLAIM_GATE_DAYS && s.strategy && s.buy_hold;
+              return (
+                <div className="fwd-card" key={s.symbol}>
+                  <div className="fwd-head">
+                    <strong>{s.symbol}</strong>
+                    <span className="num faint">
+                      {n} day{n === 1 ? "" : "s"} recorded
+                      {s.start ? ` since ${s.start}` : ""}
+                    </span>
+                  </div>
+
+                  {s.curve && s.curve.strategy.length > 1 ? (
+                    <ForwardCurve
+                      days={s.curve.days}
+                      strategy={s.curve.strategy}
+                      buyHold={s.curve.buy_hold}
+                    />
+                  ) : null}
+
+                  {showStats ? (
+                    <div className="fwd-figs">
+                      <Figure
+                        label="Strategy CAGR"
+                        value={fmtPct(s.strategy!.cagr * 100)}
+                        n={n}
+                        nUnit="days"
+                        noCi="interval not yet computed on the forward ledger"
+                        // Coloured against the benchmark, not against zero.
+                        // PLAN §2.1: every strategy is measured against
+                        // buy-and-hold, always. A positive return that lost to
+                        // holding is not a green number, and painting it green
+                        // is how a page flatters its own strategy.
+                        tone={s.strategy!.cagr >= s.buy_hold!.cagr ? "good" : "bad"}
+                        note={`${fmtPct(
+                          (s.strategy!.cagr - s.buy_hold!.cagr) * 100
+                        )} vs buy & hold`}
+                      />
+                      <Figure
+                        label="Buy & hold CAGR"
+                        value={fmtPct(s.buy_hold!.cagr * 100)}
+                        n={n}
+                        nUnit="days"
+                        noCi="benchmark, same window"
+                      />
+                    </div>
+                  ) : (
+                    <div className="fwd-withheld">
+                      {s.note ? `${s.note} — ` : ""}
+                      performance statistics withheld until the{" "}
+                      {CLAIM_GATE_DAYS}-day gate opens
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

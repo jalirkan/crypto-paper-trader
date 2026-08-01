@@ -130,10 +130,19 @@ def forward_stats(conn: sqlite3.Connection, symbol: str) -> dict | None:
     """Track-record stats from the immutable forward ledger (not backtest!)."""
     from .backtest import metrics
 
-    rows = conn.execute(
-        "SELECT day, weight, close FROM forward_paper WHERE symbol=? ORDER BY day",
-        (symbol,),
-    ).fetchall()
+    try:
+        rows = conn.execute(
+            "SELECT day, weight, close FROM forward_paper WHERE symbol=? ORDER BY day",
+            (symbol,),
+        ).fetchall()
+    except sqlite3.OperationalError:
+        # The table is created by the recorder (collectors.run). Before its
+        # first run it does not exist, and the signal service opens the archive
+        # read-only so it cannot create it. A ledger that has not started is a
+        # record of length zero, not a server error — reporting it as a 500
+        # made "no data yet" indistinguishable from "the service is broken".
+        return {"symbol": symbol, "days": 0, "note": "forward ledger not started"}
+
     if len(rows) < 3:
         return {"symbol": symbol, "days": len(rows), "note": "forward ledger warming up"}
 

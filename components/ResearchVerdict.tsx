@@ -46,11 +46,15 @@ export default function ResearchVerdict() {
           noCi="exact count"
           note="the claim requires ≥3 months of forward paper first"
         />
+        {/* No start date is asserted here. Whether the forward clock has
+            started is a fact that lives in the archive, and this component
+            renders on a site with no backend attached — see ForwardStats,
+            which reports it from data or says it cannot. */}
         <Figure
-          label="Candidates under forward paper"
+          label="Candidates awaiting forward paper"
           value="1"
           noCi="exact count"
-          note="Donchian + vol targeting, live since 2026-07-26"
+          note="Donchian + vol targeting — the only survivor of walk-forward testing"
         />
       </div>
     </section>
