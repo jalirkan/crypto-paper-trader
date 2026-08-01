@@ -32,3 +32,6 @@ __pycache__/
 
 # data archive (never commit market data)
 /data/
+
+# agent tooling (machine-local permission allowlist; shared .claude/settings.json is not ignored)
+.claude/settings.local.json

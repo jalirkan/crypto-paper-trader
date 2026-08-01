@@ -57,13 +57,43 @@ in its own commit, and say so in the message.
    a terminal scrollback did not happen.
 4. **Kill criteria are written before the run**, by whoever proposes it.
 
+## Standing rules
+
+Folded in from `HANDOFF-BRIEF.md` (2026-07-31), which had gone stale against
+the ledgers and was removed. These are the parts that outlived it.
+
+1. **Simulated money only.** Never add live trading, exchange keys with
+   withdrawal rights, or anything that can move real funds. The "not financial
+   advice" framing stays prominent. The Lightning node is the one place real
+   value exists, and every command that moves it is typed by a human.
+2. **No claim without evidence.** If a doc says the app does something, someone
+   must have watched it do that thing. Reading the code and concluding it
+   should work is not evidence. This is the rule the rest serve.
+3. **Never commit secrets.** `.env.local` stays ignored. A key found in a
+   tracked file or in history gets reported, not quietly rewritten away.
+4. **Disclosed limitations are a feature.** Keep and extend the README's
+   "Known v1 limitations". Anything that can't be made to work gets removed
+   from the README or marked incomplete — never left as an unqualified claim.
+   Overselling is this project's specific risk.
+5. **Free-tier APIs deserve respect.** CoinGecko rate-limits; preserve the
+   caching and back-off rather than removing it for convenience.
+6. **Argue with the brief.** Whoever wrote the instructions usually couldn't
+   run the code. Evidence from actually running it outranks their assumptions —
+   say so and propose better.
+7. **Small commits with reasons** — what changed and *why*. The reasoning is
+   invisible to anyone browsing GitHub unless the message carries it.
+8. **Ask before** deleting features, changing the data model, adding heavy
+   dependencies, or touching another agent's territory per the ownership table.
+
 ## What actually makes the frontend "hall of fame"
 
 Worth saying plainly, because it changes the brief: this project's
-distinguishing asset is that it **repeatedly refused to fool itself** — five
-experiments, five honest nulls, including one where the study caught a bug in
-its own control and then a test caught a bug in the fix. A generic slick
-dashboard buries that. The frontend job is to make the *epistemics* legible:
+distinguishing asset is that it **repeatedly refused to fool itself** — six
+experiments, six honest nulls, including one where the study caught a bug in
+its own control and then a test caught a bug in the fix, and one where a
+point estimate 0.13pp over the kill bar was caught before it became a
+finding. A generic slick dashboard buries that. The frontend job is to make
+the *epistemics* legible:
 
 - the forward-paper equity curve against buy-and-hold, live and unretouchable
 - the experiment ledger rendered with its corpses visible, not hidden

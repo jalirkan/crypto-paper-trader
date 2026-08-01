@@ -182,19 +182,22 @@ true, not because a new idea feels promising:
 - A funding-rate regime returns, reactivating EXP-006's dormant premium.
 - Cross-sectional momentum (below) is run as the one remaining cheap test.
 
-### Remaining edge paths, ranked (as of 2026-07-31, after EXP-005)
+### Remaining edge paths, ranked (as of 2026-07-31, after EXP-006)
 
-Five experiments, five nulls. What is left that has NOT been tested:
+Six experiments, six nulls. What is left that has NOT been tested:
 
-1. **Funding harvest (delta-neutral)** — simulator built (`research/funding/`).
-   Highest remaining odds (~60–75% per §1) because it is a structural risk
-   premium, not directional alpha. **No longer blocked:** the futures *API*
-   geo-blocks US IPs, but Binance's static mirror (data.binance.vision) serves
-   the same history as monthly CSV dumps and is not geo-restricted — verified
-   2026-07-31, HTTP 200 from a US residential connection. `collectors/sources/
-   binance_vision.py` pulls it in 37 requests per symbol instead of thousands
-   of paginated API calls. Run `python -m collectors.backfill --funding`, then
-   `python -m research.funding.sim`.
+1. ~~**Funding harvest (delta-neutral)**~~ — **tested and killed, EXP-006.**
+   It carried the highest pre-registered odds in the plan (~60–75% per §1) and
+   was the last untested structural premium. The geo-block was solved without
+   the VPS: the futures *API* blocks US IPs, but Binance's static mirror
+   (data.binance.vision) serves the same history as monthly CSV dumps and does
+   not — verified 2026-07-31, HTTP 200 from a US residential connection;
+   `collectors/sources/binance_vision.py` pulls it in 37 requests per symbol.
+   Result: ~5% APR over 2.9 years with all three bootstrap CIs straddling the
+   5% bar, and a per-year decomposition showing the entire figure is a fossil
+   of 2023–24. Now a **monitoring item, not a path** — see the reopening
+   criteria above; it revives only via the live signal, never via the
+   historical average.
 2. **Cross-sectional momentum** — everything tested so far is time-series
    (is THIS asset trending?). Ranking the 10-coin universe and holding the top
    N is a genuinely different, well-documented effect, and the archive already
@@ -209,10 +212,11 @@ Five experiments, five nulls. What is left that has NOT been tested:
 5. **Regime models (HMM)** — offered and deferred; EXP-003/004 killed both
    gating overlays, so the prior on any regime filter is now low.
 
-The honest note after five nulls: the remaining edge is mostly **risk
-management and behaviour** — sizing, not blowing up, staying invested — plus
-the structural yield in (1). That is a less exciting sentence than "we found
-alpha" and it is the one the evidence supports.
+The honest note after six nulls: the remaining edge is mostly **risk
+management and behaviour** — sizing, not blowing up, staying invested. EXP-006
+removed the structural-yield exception that used to soften this sentence: the
+funding premium was real, and it is dormant. That is a less exciting
+conclusion than "we found alpha" and it is the one the evidence supports.
 
 | Ongoing (monthly) | Review ritual: ledger review, sleeve report vs benchmarks, kill/keep decisions. **Decision gates:** X API ($200/mo) only if free-source event studies show near-significant drift. Real-money micro-pilot (~$100, purely to calibrate true slippage) only after a sleeve survives 3 months of forward paper — optional, your call entirely. |
 
