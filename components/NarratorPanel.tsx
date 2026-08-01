@@ -64,10 +64,23 @@ export default function NarratorPanel() {
 
   if (serviceDown) {
     return (
-      <div className="notice">
-        The live strategy service isn&apos;t running. Start it alongside the app:{" "}
-        <code>python -m research.signal_service</code> — then this panel shows the
-        forward-paper strategy&apos;s live state, narrated by Claude.
+      <div className="stack">
+        <p className="lede">
+          The candidate sleeve is <strong>Donchian breakout with volatility
+          targeting</strong> — a 20-day channel, long or flat, sized to a 40%
+          annualized volatility target. It decides one thing per symbol per day:
+          hold, or stand aside. That decision is written to the forward ledger
+          before the next day opens, which is what makes the record
+          un-backfillable.
+        </p>
+        <div className="notice">
+          <strong>Today&apos;s live position isn&apos;t shown here</strong>{" "}
+          because the signal service isn&apos;t hosted — it reads the archive on
+          a machine, not in this browser. Running locally, this panel shows each
+          symbol&apos;s position, the price that would flip it, and a plain-language
+          briefing written by Claude:{" "}
+          <code>python -m research.signal_service</code>.
+        </div>
       </div>
     );
   }

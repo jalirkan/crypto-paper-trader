@@ -469,3 +469,231 @@ input:focus, select:focus { outline: none; border-color: var(--blue); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ================= Research page ================= */
+
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+.lede {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+.lede strong { color: var(--text); font-weight: 600; }
+
+/* ---------- Verdict band (the headline) ---------- */
+.verdict-band {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: center;
+  padding: 30px 28px;
+  margin-bottom: 20px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(59, 130, 246, 0.10), transparent 60%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 1000px) {
+  .verdict-band { grid-template-columns: 1fr; gap: 22px; padding: 22px 18px; }
+}
+
+.verdict-lead h1 {
+  font-size: 30px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
+}
+
+.verdict-emph { color: var(--amber); }
+
+.verdict-lead p {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 62ch;
+}
+.verdict-lead p + p { margin-top: 10px; }
+.verdict-lead strong { color: var(--text); font-weight: 600; }
+.verdict-sub { color: var(--text-faint) !important; font-size: 12.5px !important; }
+
+.verdict-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Figure: a number that can't render bare ---------- */
+.figure {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.figure-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+
+.figure-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.figure-ci { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.figure-n { font-size: 10.5px; color: var(--text-faint); margin-top: 3px; }
+.figure-noci { font-style: italic; opacity: 0.85; }
+.figure-note { font-style: italic; }
+
+/* ---------- Forward-paper gate ---------- */
+.gate {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.gate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.gate-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+}
+
+.gate-count { font-size: 12px; font-weight: 600; }
+
+.gate-track {
+  height: 6px;
+  background: var(--bg);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.gate-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  border-radius: 99px;
+}
+
+.gate-note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+.fwd-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.fwd-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.fwd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.fwd-head .faint { font-size: 11px; }
+
+.fwd-figs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.fwd-withheld {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* ---------- Experiment ledger ---------- */
+.exp-list { display: flex; flex-direction: column; gap: 10px; }
+
+.exp-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.exp-card > summary {
+  cursor: pointer;
+  padding: 11px 13px;
+  list-style: none;
+  transition: background 0.12s ease;
+}
+.exp-card > summary::-webkit-details-marker { display: none; }
+.exp-card > summary:hover { background: rgba(255, 255, 255, 0.025); }
+.exp-card[open] > summary { border-bottom: 1px solid var(--border); }
+
+.exp-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.exp-id { font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
+.exp-name { font-size: 13px; font-weight: 500; flex: 1; min-width: 0; }
+.exp-date { font-size: 11px; }
+
+.exp-gist {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
+.exp-fields { padding: 12px 13px 13px; display: flex; flex-direction: column; gap: 11px; }
+
+.exp-field dt {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+
+.exp-field dd {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+.exp-field dd p + p { margin-top: 7px; }
+
+/* Verdict is the point of the entry — give it weight. */
+.exp-field:has(dt:first-child) dd { max-width: 78ch; }
+
+.method p { font-size: 12.5px; line-height: 1.7; color: var(--text-dim); }
+.method p + p { margin-top: 9px; }
+
+@media (max-width: 560px) {
+  .verdict-lead h1 { font-size: 23px; }
+  /* Give the entry name its own line so the badge doesn't squeeze it into a
+     two-word column. */
+  .exp-name { flex-basis: 100%; order: 3; }
+  .exp-date { margin-left: auto; }
+  .fwd-figs { grid-template-columns: 1fr; }
+}

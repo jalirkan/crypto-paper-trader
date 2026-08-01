@@ -25,9 +25,12 @@ export default function TipJarPanel() {
   if (down) {
     return (
       <div className="notice">
-        ⚡ The Lightning tip jar isn&apos;t online yet — it goes live with the
-        VPS deployment (signet first, then mainnet). The stack is built and
-        tested; see <code>deploy/vps/README.md</code>.
+        ⚡ <strong>The Lightning tip jar has no node attached yet.</strong> The
+        stack is written and tested offline — a custom LNURL-pay and Lightning
+        Address implementation (LUD-06/12/16) against LND&apos;s REST API, with
+        the web service confined to an invoice-only macaroon so it can create
+        invoices but never spend. It needs a funded node to go live. Run it with
+        no infrastructure at all: <code>python -m lightning.service --demo</code>.
       </div>
     );
   }
