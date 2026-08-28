@@ -9,7 +9,7 @@ import { readLedger } from "@/lib/ledger-server";
 export const metadata = {
   title: "Research — Crypto Paper Trader",
   description:
-    "Six pre-registered experiments, six honest nulls. The full ledger, including every killed idea, with intervals and sample sizes attached.",
+    "Seven pre-registered experiments, seven honest nulls. The full ledger, including every killed idea, with intervals and sample sizes attached.",
 };
 
 export default async function ResearchPage() {

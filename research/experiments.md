@@ -330,5 +330,67 @@ Disposition: Fixed now, so it cannot be renegotiated later. INCONCLUSIVE does
              reopening criteria in RESEARCH_PLAN.md are the only way back.
 Determinism: One seed (42) for the bootstrap; everything else is a
              deterministic function of the archive. Same seed, same numbers.
-Result:      PENDING — committed before the run.
-Verdict:     PENDING — committed before the run.
+Result:      Run once, on an archive backfilled the same morning. Universe: all
+             ten tracked coins, none excluded — 1,004 measured bars,
+             2023-11-29 → 2026-08-28, 34 rebalances, turnover 10.0×/yr.
+               cross-sectional momentum   CAGR  +9.4%  Sharpe 0.47  MaxDD −79.9%
+               buy & hold BTC             CAGR +30.9%  Sharpe 0.80  MaxDD −53.0%
+               equal-weight universe      CAGR +12.9%  Sharpe 0.51  MaxDD −67.0%
+             **ΔSharpe vs B&H BTC = −0.333, 95% CI [−0.971, +0.297].** The
+             interval straddles zero, so the pre-registered rule returns
+             INCONCLUSIVE — it does not reject. (Reported, outside the bar:
+             bootstrap p on mean excess return 0.587.)
+             All four guards fail, none of them narrowly:
+               G1 drawdown −79.9% against B&H BTC's −53.0% — 27 points worse,
+                  and the one figure here that is far outside sampling noise.
+               G2 sealed holdout ΔSharpe −0.706 over the final 365 bars.
+               G3 robust −0.538. All six ±25% neighbours are negative, spanning
+                  −0.279 to −0.538: not a narrow island, uniformly behind.
+               G4 −0.037 against the equal-weight universe — ranking did
+                  slightly WORSE than holding all ten coins, which is the
+                  hypothesis's own claim failing on its own terms.
+             Per-year ΔSharpe: 2024 −0.378, 2025 −0.723, 2026 −0.256. It loses
+             to BTC in every year measured, including 2024, the year it makes
+             money. Tables: reports/xsmom_2026-08-28.md
+Verdict:     INCONCLUSIVE on the pre-registered interval — and by the
+             disposition fixed above before the run, the path closes: the
+             sleeve does not graduate, and the parameters are not retried.
+             The honest reading has two halves and both matter. Nothing in this
+             run points toward an edge: every point estimate is negative, every
+             guard fails, and the effect loses in all three years. But ~1,000
+             bars cannot resolve a Sharpe gap of 0.33, which the Power note
+             said in advance, so the interval cannot rule the effect out
+             either. "No evidence for it, and not enough evidence against it"
+             is the whole finding, and stretching either half would be the
+             failure this ledger exists to catch.
+             Two things the run does establish. The design is **always fully
+             invested** — cross-sectional ranking has no flat state, so it holds
+             the top three through a bear market where EXP-001's long/flat
+             Donchian steps aside. That is why the drawdown is 27 points worse
+             than simply holding BTC, and it is a structural property of the
+             hypothesis rather than a sampling accident. And **the ranking
+             itself subtracted value** (G4 −0.037): whatever the top-3 basket
+             earned, holding all ten earned slightly more. The distinctive
+             claim of cross-sectional momentum — that the ranking is the
+             valuable part — is the specific thing that did not happen here.
+             With this, RESEARCH_PLAN.md's last sanctioned cheap test is spent.
+Caveats:     (1) Survivorship. The ten coins are today's majors, and the
+             archive holds no delisted names to add back — a bias that flatters
+             this strategy, not one that explains its failure. (2) One cycle.
+             1,004 bars is a single crypto regime; the interval width is the
+             honest expression of that, not a footnote to it. (3) The design is
+             deliberately unadorned — long-only, no volatility targeting, no
+             trend filter — because the pre-registration tests the ranking
+             effect, not a portfolio built on top of it. Layering EXP-002's
+             kept vol overlay onto this would be a different experiment needing
+             its own pre-registration, and the reopening criteria do not
+             sanction one. (4) Costs bite harder here than anywhere else in
+             this ledger: 10 turnovers a year at 15 bps is ~1.5%/yr of drag at
+             the modelled rate, and 15 bps is optimistic for the smaller names.
+             Real execution makes these numbers worse, never better.
+             (5) Single venue, spot only.
+Commits:     Pre-registration `81b1bd7` (this entry, bar and guards, nothing
+             else). Machinery `d082203`. Result and verdict in the commit that
+             carries this line. The heading still says PRE-REGISTRATION and
+             stays that way: it is what the entry is, and editing any line
+             above Result would cost the one guarantee the entry advertises.

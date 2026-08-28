@@ -163,6 +163,15 @@ every rule in this document was written to prevent. **The machine's value is
 that it says no.** Six nulls with pre-registered criteria is a stronger result
 than a seventh experiment that finally "works".
 
+> **Addendum, 2026-08-28.** The seventh experiment ran, under the reopening
+> criterion below that specifically sanctioned it, and it did not work either
+> — EXP-007, cross-sectional momentum. Worth recording that the sentence above
+> was written before it, and that the machinery behaved as designed: the bar
+> was committed in its own commit before the code existed, the interval came
+> back straddling zero, and the disposition for that case had already been
+> fixed, so there was nothing left to decide once the numbers landed. That is
+> the whole apparatus doing its job on the least interesting possible day.
+
 **What consolidation means:**
 1. Finish and deploy the public research page (Claude Code owns this).
 2. Let the forward-paper ledger accrue — it is the only evidence that still
@@ -180,11 +189,14 @@ true, not because a new idea feels promising:
 - The forward-paper record diverges materially from the backtest (that is a
   finding either way, and a reason to investigate).
 - A funding-rate regime returns, reactivating EXP-006's dormant premium.
-- Cross-sectional momentum (below) is run as the one remaining cheap test.
+- ~~Cross-sectional momentum is run as the one remaining cheap test.~~
+  **Spent, 2026-08-28 — EXP-007.** This criterion is now closed: it licensed
+  one pre-registered run, that run happened, and it found nothing. It does not
+  license a second attempt at other parameters.
 
-### Remaining edge paths, ranked (as of 2026-07-31, after EXP-006)
+### Remaining edge paths, ranked (as of 2026-08-28, after EXP-007)
 
-Six experiments, six nulls. What is left that has NOT been tested:
+Seven experiments, seven nulls. What is left that has NOT been tested:
 
 1. ~~**Funding harvest (delta-neutral)**~~ — **tested and killed, EXP-006.**
    It carried the highest pre-registered odds in the plan (~60–75% per §1) and
@@ -198,10 +210,18 @@ Six experiments, six nulls. What is left that has NOT been tested:
    of 2023–24. Now a **monitoring item, not a path** — see the reopening
    criteria above; it revives only via the live signal, never via the
    historical average.
-2. **Cross-sectional momentum** — everything tested so far is time-series
-   (is THIS asset trending?). Ranking the 10-coin universe and holding the top
-   N is a genuinely different, well-documented effect, and the archive already
-   has 3 years of daily bars for it. Cheapest real experiment available.
+2. ~~**Cross-sectional momentum**~~ — **tested, EXP-007.** It was the last
+   sanctioned cheap test under the reopening criteria below, and it is now
+   spent. Ranking the 10-coin universe on trailing 90-day return and holding
+   the top 3, rebalanced monthly, returned ΔSharpe −0.333 against buy-and-hold
+   BTC with a 95% CI of [−0.971, +0.297]: INCONCLUSIVE under the three-outcome
+   rule, since ~1,000 bars cannot resolve a gap that size. All four
+   pre-registered guards failed, two of them substantively rather than
+   statistically — drawdown 27 points worse than holding BTC (the design has
+   no flat state, so it rides the whole bear), and the ranking itself
+   subtracting value against simply holding all ten coins. Nothing here points
+   toward an edge; the interval is too wide to rule one out. The path closes
+   on the disposition pre-registered before the run.
 3. **Lower frequency / longer holds** — the one axis where an individual is
    structurally advantaged: no capacity limit, no redemption pressure, and the
    ability to sit through a drawdown that would end a fund. Weekly or monthly
@@ -212,11 +232,14 @@ Six experiments, six nulls. What is left that has NOT been tested:
 5. **Regime models (HMM)** — offered and deferred; EXP-003/004 killed both
    gating overlays, so the prior on any regime filter is now low.
 
-The honest note after six nulls: the remaining edge is mostly **risk
+The honest note after seven nulls: the remaining edge is mostly **risk
 management and behaviour** — sizing, not blowing up, staying invested. EXP-006
 removed the structural-yield exception that used to soften this sentence: the
-funding premium was real, and it is dormant. That is a less exciting
-conclusion than "we found alpha" and it is the one the evidence supports.
+funding premium was real, and it is dormant. EXP-007 sharpened it from the
+other direction — the sleeve that lost most to buy-and-hold BTC lost on
+*drawdown*, because it had no flat state, which is the same lesson EXP-001
+found from the winning side. That is a less exciting conclusion than "we found
+alpha" and it is the one the evidence supports.
 
 | Ongoing (monthly) | Review ritual: ledger review, sleeve report vs benchmarks, kill/keep decisions. **Decision gates:** X API ($200/mo) only if free-source event studies show near-significant drift. Real-money micro-pilot (~$100, purely to calibrate true slippage) only after a sleeve survives 3 months of forward paper — optional, your call entirely. |
 

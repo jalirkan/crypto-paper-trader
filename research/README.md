@@ -77,6 +77,19 @@ python -m research.backtest.run_overlays     # vol target / F&G gate / stablecoi
 
 Verdicts in `experiments.md`: vol targeting KEPT, both flow gates KILLED.
 
+## Cross-sectional momentum (EXP-007)
+
+```powershell
+python -m research.backtest.run_xsmom          # the whole experiment, one run
+```
+
+Ranks the 10-coin universe on trailing 90-day return, holds the top 3,
+rebalances monthly, and decides against a pre-registered interval. There are no
+strategy flags on purpose — the parameters and the kill bar are constants in
+`backtest/xsmom.py` and a test asserts they still match the ledger. Verdict in
+`experiments.md`: INCONCLUSIVE on the interval, all four guards failed, path
+closed. Report: `reports/xsmom_2026-08-28.md`.
+
 ## LLM event pipeline
 
 ```powershell

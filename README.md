@@ -4,8 +4,8 @@ A crypto paper-trading app **and** the quantitative research programme that
 tried to find an edge for it — including the part most projects leave out:
 what happened when the edges didn't survive testing.
 
-**Six pre-registered experiments. Six honest nulls.** Every kill criterion was
-written before the run; every failed idea is still in the ledger, with its
+**Seven pre-registered experiments. Seven honest nulls.** Every kill criterion
+was written before the run; every failed idea is still in the ledger, with its
 numbers. The one survivor — Donchian breakout with volatility targeting — is
 recorded as a *candidate under forward paper trading*, not a strategy that
 works. Simulated money throughout; nothing here is financial advice.
@@ -16,7 +16,7 @@ works. Simulated money throughout; nothing here is financial advice.
 | **How the work was split between two AI agents** | [`AGENTS.md`](./AGENTS.md) |
 | **Research method and remaining edge paths** | [`RESEARCH_PLAN.md`](./RESEARCH_PLAN.md) |
 
-### What the six experiments found
+### What the seven experiments found
 
 - **EXP-001** Trend baselines: MA-cross and time-series momentum collapse out
   of sample; Donchian survives walk-forward on BTC/ETH/SOL at roughly half the
@@ -37,6 +37,13 @@ works. Simulated money throughout; nothing here is financial advice.
 - **EXP-006** Delta-neutral funding harvest: ~5% APR across three years, but
   the per-year decomposition shows +10–12% in 2024 and ~0% since. The premium
   is real and already gone.
+- **EXP-007** Cross-sectional momentum — the last test the plan's reopening
+  criteria sanctioned. Ranking ten coins on 90-day return and holding the top
+  three came back at ΔSharpe −0.33 vs buy-and-hold BTC, CI [−0.97, +0.30]:
+  *inconclusive*, because a thousand bars cannot resolve a gap that size. All
+  four pre-registered guards failed anyway, including the one that matters
+  most for the hypothesis — the ranking did slightly worse than holding all
+  ten coins.
 
 The through-line: the machinery repeatedly caught its own mistakes — a bad
 control, then a bug in the fix for that control, then a point estimate about

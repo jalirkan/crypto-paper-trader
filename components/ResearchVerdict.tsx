@@ -1,7 +1,7 @@
 import Figure from "./Figure";
 
 /**
- * The headline. Six nulls is the finding, so it goes at the top at full size
+ * The headline. Seven nulls is the finding, so it goes at the top at full size
  * rather than being inferred from a wall of cards further down.
  *
  * Counts are stated the way the ledger states them, not derived from a regex:
@@ -14,9 +14,9 @@ export default function ResearchVerdict() {
     <section className="verdict-band">
       <div className="verdict-lead">
         <h1>
-          Six pre-registered experiments.
+          Seven pre-registered experiments.
           <br />
-          <span className="verdict-emph">Six honest nulls.</span>
+          <span className="verdict-emph">Seven honest nulls.</span>
         </h1>
         <p>
           Every kill criterion was written <em>before</em> the run. Every failed
@@ -36,8 +36,8 @@ export default function ResearchVerdict() {
       <div className="verdict-figures">
         <Figure
           label="Pre-registered experiments"
-          value="6"
-          noCi="exact count, EXP-001 → EXP-006"
+          value="7"
+          noCi="exact count, EXP-001 → EXP-007"
           note="plus 3 automated search campaigns (LAB-001→003)"
         />
         <Figure
