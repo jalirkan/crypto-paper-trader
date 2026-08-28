@@ -242,3 +242,93 @@ Verdict:     Third consecutive honest null from search. Combined with
              vs 77%/27% in LAB-002).
 Caveats:     Report file: reports/lab_finalize_multi_2026-07-26.md. Same
              single-bear-regime holdout caveat as before, now cubed.
+
+## EXP-007 · 2026-08-28 · Cross-sectional momentum — PRE-REGISTRATION
+
+Ordering:    This entry was committed **before the code that computes its
+             result existed**. Everything above the Result line is fixed from
+             that commit onward; the results commit fills in Result and Verdict
+             and edits nothing else, so `git log -p research/experiments.md`
+             shows whether the bar moved after the numbers arrived. That check
+             is the only thing separating a finding from a story.
+Sanction:    RESEARCH_PLAN.md's reopening criteria. The search phase is closed;
+             cross-sectional momentum is the one remaining cheap test the plan
+             names (edge path #2). Run once, at the pre-registered parameters,
+             and not again.
+Hypothesis:  Everything tested so far is time-series momentum — *is this asset
+             trending?* Cross-sectional momentum asks a different question —
+             *which assets are trending most?* — and is a separately documented
+             effect. If it exists in this 10-coin universe, ranking on trailing
+             90-day return and holding the top 3 beats buy-and-hold BTC on a
+             risk-adjusted basis, net of costs.
+Config:      Universe: every coin in collectors/config.py COINS (BTC ETH SOL
+             BNB XRP ADA DOGE AVAX LINK LTC) with a daily close on every bar of
+             the common span; any coin excluded by that rule is named in the
+             report. The list is fixed — chosen in 2026-07 for the collectors,
+             not for this experiment — and it is survivorship-biased toward
+             coins that were top-10 then and still are. Disclosed, not
+             corrected: the archive holds no delisted names to add back.
+             Signal: trailing return closes[t]/closes[t−90] − 1, computed at
+             close t, from data ≤ t only.
+             Portfolio: rank descending, hold the top 3 equal-weight, long-only,
+             fully invested while in position; rebalance every 30 bars.
+             Positions drift between rebalances and are left alone — costs are
+             charged only when a rebalance actually trades.
+             Parameters fixed a priori, no grid, per overlay discipline
+             (EXP-002/003/004): lookback 90, top-N 3, rebalance 30. Textbook
+             cross-sectional values; 90 already appears in the repo's TSMOM grid.
+             Costs: 10 bps fee + 5 bps slippage per side on traded weight, the
+             repo's standard. Unmodelled costs are all negative — alt spreads
+             are wider than BTC's, and there is no market-impact term.
+             Benchmarks: B&H BTC (the bar, rule 1) and the equal-weight
+             universe basket (guard G4). Flat cash is the trivial third.
+Data:        Daily candles from data/archive.db, 3-year backfill re-run
+             2026-08-28 on a fresh Linux clone. Measured span: from the first
+             bar the sleeve can hold a position (bar 91) to the last bar
+             present for every universe member. Both series see identical bars.
+Statistic:   ΔSharpe = Sharpe(XSMOM) − Sharpe(B&H BTC), annualized (365),
+             both net of costs, on the primary span (the full measured span).
+             Interval: paired stationary block bootstrap (Politis–Romano, mean
+             block 20 bars, 2,000 resamples, seed 42) — the same block indices
+             applied to both return series, so the pairing that defines the
+             difference survives resampling. 95% percentile CI on ΔSharpe.
+KILL BAR:    Decided against the INTERVAL, never the point estimate. Three
+             outcomes, as EXP-006 established:
+               KILL          — CI upper bound < 0.
+               KEEP          — CI lower bound > 0 AND all four guards pass.
+               INCONCLUSIVE  — anything else: the interval straddles zero, or
+                               it clears zero but a guard fails.
+Guards:      Each can only PREVENT a KEEP. None can create one.
+             G1 drawdown — XSMOM max drawdown no worse than B&H BTC's. The
+                plan's target is comparable return at materially smaller
+                drawdown; a win bought with a deeper hole is not it.
+             G2 sealed holdout — ΔSharpe > 0 on the final 365 daily bars, the
+                span research/lab seals (`--holdout-bars 365`). No design
+                decision here was made by looking at it.
+             G3 robustness — robust ΔSharpe > 0 on the primary span, where
+                robust = min over the base configuration and its six
+                one-at-a-time ±25% neighbours (lookback 68/113, top-N 2/4,
+                rebalance 23/38). Same min-over-neighbours rule the lab uses.
+                An edge that dies at ±25% is a narrow parameter island
+                (EXP-001's kill language), not an effect. Nothing may be
+                SELECTED from the neighbourhood — it can only fail.
+             G4 not-just-beta — ΔSharpe vs the equal-weight universe basket
+                > 0. The hypothesis is that *ranking* adds value; a sleeve
+                that beats BTC only because alts rallied has not tested it.
+Not used:    Deflated Sharpe. DSR corrects for how many things a search tried;
+             this is one pre-registered configuration, N = 1 trial, and the
+             neighbourhood is a probe, not a search.
+Power:       Stated in advance, because a low-power test that returns
+             INCONCLUSIVE is a result about the test, not the market: ~1,000
+             primary-span bars cannot resolve a modest Sharpe difference, and
+             the 365-bar holdout is worse. Like the lab's holdout this design
+             can reject and cannot confirm. An interval straddling zero means
+             *no evidence*, not *promising*.
+Disposition: Fixed now, so it cannot be renegotiated later. INCONCLUSIVE does
+             not graduate the sleeve and does not license a re-run at other
+             parameters (rule 6). It is recorded, and the path closes; the
+             reopening criteria in RESEARCH_PLAN.md are the only way back.
+Determinism: One seed (42) for the bootstrap; everything else is a
+             deterministic function of the archive. Same seed, same numbers.
+Result:      PENDING — committed before the run.
+Verdict:     PENDING — committed before the run.
